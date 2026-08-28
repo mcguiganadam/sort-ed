@@ -109,6 +109,12 @@ export default function Home() {
           Everything above lives only in this browser. Nothing is uploaded to a server — ever.
         </p>
         <div className="flex gap-4">
+          <a
+            href="mailto:sorted.help@proton.me"
+            className="underline decoration-dotted underline-offset-2 hover:text-sorted-ink"
+          >
+            Contact
+          </a>
           <button onClick={handleExport} className="underline decoration-dotted underline-offset-2 hover:text-sorted-ink">
             Export my data
           </button>
