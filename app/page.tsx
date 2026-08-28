@@ -106,8 +106,7 @@ export default function Home() {
 
       <footer className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-sorted-border pt-6 text-xs text-sorted-ink-soft">
         <p className="max-w-md">
-          Everything above lives only in this browser (IndexedDB). Nothing is uploaded to a SortEd
-          server — ever.
+          Everything above lives only in this browser. Nothing is uploaded to a server — ever.
         </p>
         <div className="flex gap-4">
           <button onClick={handleExport} className="underline decoration-dotted underline-offset-2 hover:text-sorted-ink">
