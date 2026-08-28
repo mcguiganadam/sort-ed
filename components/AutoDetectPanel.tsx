@@ -65,11 +65,11 @@ function SourceBlock({
 
   if (!connected) {
     return (
-      <div className="rounded-xl border border-dashed border-park-leaf/30 p-4 text-sm text-park-leafdark">
+      <div className="rounded-xl border border-dashed border-sorted-border p-4 text-sm text-sorted-leaf-dark">
         <p className="mb-2">{label} isn't connected yet — nothing is read until you sign in.</p>
         <button
           onClick={() => signIn(provider)}
-          className="rounded-full bg-park-leaf px-3 py-1 text-white hover:bg-park-leafdark"
+          className="rounded-full bg-sorted-leaf px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-leaf-dark"
         >
           Connect {label}
         </button>
@@ -78,43 +78,43 @@ function SourceBlock({
   }
 
   return (
-    <div className="rounded-xl border border-park-leaf/20 p-4">
+    <div className="rounded-xl border border-sorted-border bg-white p-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-park-leafdark">{label}</h3>
+        <h3 className="font-display text-sm font-semibold text-sorted-leaf-dark">{label}</h3>
         <button
           onClick={scan}
           disabled={loading}
-          className="text-xs font-medium text-park-leaf underline decoration-dotted hover:text-park-leafdark"
+          className="text-xs font-medium text-sorted-leaf underline decoration-dotted hover:text-sorted-leaf-dark"
         >
           {loading ? "Scanning…" : "Scan recent activity"}
         </button>
       </div>
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
       {items && items.length === 0 && !error && (
-        <p className="mt-2 text-xs text-park-ink/60">Nothing that looks parkable right now.</p>
+        <p className="mt-2 text-xs text-sorted-ink-soft">Nothing that looks parkable right now.</p>
       )}
       <ul className="mt-3 space-y-2">
         {items
           ?.filter((i) => !dismissed.has(i.ref))
           .map((item) => (
-            <li key={item.ref} className="rounded-lg bg-park-bg px-3 py-2 text-sm">
+            <li key={item.ref} className="rounded-lg bg-sorted-bg px-3 py-2 text-sm">
               <div className="flex items-center justify-between gap-2">
-                <span className="truncate text-park-ink/80">
+                <span className="truncate text-sorted-ink">
                   <strong>{item.from}</strong> — {item.snippet}
                 </span>
                 {item.suggestedType && (
-                  <span className="whitespace-nowrap rounded-full bg-park-leaf/10 px-2 py-0.5 text-xs text-park-leafdark">
+                  <span className="whitespace-nowrap rounded-full bg-sorted-leaf-soft px-2 py-0.5 text-xs text-sorted-leaf-dark">
                     {TASK_TYPE_LABELS[item.suggestedType as keyof typeof TASK_TYPE_LABELS]}
                   </span>
                 )}
               </div>
               <div className="mt-2 flex gap-3 text-xs">
-                <button onClick={() => handlePark(item)} className="font-medium text-park-leaf hover:underline">
+                <button onClick={() => handlePark(item)} className="font-medium text-sorted-leaf hover:underline">
                   Park it
                 </button>
                 {provider === "google" && (
                   <a
-                    className="font-medium text-park-amber hover:underline"
+                    className="font-medium text-sorted-amber hover:underline"
                     href={buildMailtoDraft({
                       subject: item.snippet,
                       suggestedType: item.suggestedType,
@@ -138,11 +138,11 @@ export default function AutoDetectPanel({ onParked }: { onParked: () => void }) 
   const slackConnected = Boolean((session as any)?.slackConnected);
 
   return (
-    <div className="rounded-2xl border border-park-leaf/20 bg-white p-5 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-park-leafdark">
+    <div className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
+      <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-sorted-leaf-dark">
         Auto-detect from Gmail &amp; Slack
       </h2>
-      <p className="mt-1 text-xs text-park-ink/60">
+      <p className="mt-1 text-xs text-sorted-ink-soft">
         Read-only. Nothing scanned here is stored — it's only ever held in this browser tab
         while you decide what to park.
       </p>

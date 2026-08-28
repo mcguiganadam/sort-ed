@@ -14,7 +14,7 @@ export default function KofiButton() {
       href={`https://ko-fi.com/${username}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-2 rounded-full border border-park-amber/40 bg-white px-4 py-2 text-sm font-medium text-park-amber shadow-sm transition hover:bg-park-amber hover:text-white"
+      className="inline-flex items-center gap-2 rounded-full border border-sorted-amber/30 bg-sorted-amber-soft px-4 py-2 text-sm font-medium text-sorted-amber shadow-card transition hover:bg-sorted-amber hover:text-white hover:shadow-card-hover"
     >
       <span aria-hidden>☕</span>
       Support SortEd on Ko-fi

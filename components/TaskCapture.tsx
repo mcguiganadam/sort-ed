@@ -22,8 +22,8 @@ export default function TaskCapture({ onParked }: { onParked: () => void }) {
   }
 
   return (
-    <form onSubmit={handlePark} className="rounded-2xl border border-park-leaf/20 bg-white p-5 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-park-leafdark">
+    <form onSubmit={handlePark} className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
+      <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-sorted-leaf-dark">
         Ten-second capture
       </h2>
       <div className="mt-3 flex flex-wrap gap-2">
@@ -32,10 +32,10 @@ export default function TaskCapture({ onParked }: { onParked: () => void }) {
             type="button"
             key={t}
             onClick={() => setTaskType(t)}
-            className={`rounded-full px-3 py-1 text-sm transition ${
+            className={`rounded-full px-3 py-1 text-sm font-medium transition ${
               taskType === t
-                ? "bg-park-leaf text-white"
-                : "bg-park-leaf/10 text-park-leafdark hover:bg-park-leaf/20"
+                ? "bg-sorted-leaf text-white shadow-sm"
+                : "bg-sorted-leaf-soft text-sorted-leaf-dark hover:bg-sorted-leaf-soft/70"
             }`}
           >
             {TASK_TYPE_LABELS[t]}
@@ -48,11 +48,13 @@ export default function TaskCapture({ onParked }: { onParked: () => void }) {
         placeholder="Initials + brief context — e.g. M.O. — lunchtime, playground"
         maxLength={140}
         autoFocus
-        className="mt-4 w-full rounded-lg border border-park-leaf/20 px-3 py-2 text-park-ink outline-none focus:border-park-leaf"
+        className="mt-4 w-full rounded-lg border border-sorted-border bg-white px-3 py-2 text-sorted-ink outline-none transition focus:border-sorted-leaf focus:ring-2 focus:ring-sorted-leaf/15"
       />
       <button
         type="submit"
-        className="mt-3 w-full rounded-lg bg-park-leaf py-2 font-medium text-white transition hover:bg-park-leafdark disabled:opacity-40"
+        className={`mt-3 w-full rounded-lg py-2 font-medium text-white transition disabled:opacity-40 ${
+          justParked ? "bg-sorted-leaf-dark" : "bg-sorted-leaf hover:bg-sorted-leaf-dark"
+        }`}
         disabled={!note.trim()}
       >
         {justParked ? "Parked ✓ — back to planning" : "Park it"}

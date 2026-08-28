@@ -37,7 +37,7 @@ export default function ParkedList({
 
   if (tasks.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-park-leaf/30 p-6 text-center text-sm text-park-ink/60">
+      <div className="rounded-2xl border border-dashed border-sorted-border p-6 text-center text-sm text-sorted-ink-soft">
         Nothing parked. Enjoy the quiet.
       </div>
     );
@@ -46,30 +46,30 @@ export default function ParkedList({
   return (
     <div className="space-y-4">
       {Object.entries(grouped).map(([type, group]) => (
-        <div key={type} className="rounded-2xl border border-park-leaf/20 bg-white p-5 shadow-sm">
-          <h3 className="text-sm font-semibold text-park-leafdark">
+        <div key={type} className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
+          <h3 className="font-display text-sm font-semibold text-sorted-leaf-dark">
             {TASK_TYPE_LABELS[type as keyof typeof TASK_TYPE_LABELS]} ({group.length})
           </h3>
           <ul className="mt-3 space-y-2">
             {group.map((task) => (
-              <li key={task.id} className="rounded-lg bg-park-bg px-3 py-2">
+              <li key={task.id} className="rounded-lg bg-sorted-bg px-3 py-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm text-park-ink/80">{task.initialCapture}</span>
+                  <span className="text-sm text-sorted-ink">{task.initialCapture}</span>
                   <div className="flex gap-3 text-xs">
-                    <button onClick={() => openTemplate(task)} className="font-medium text-park-leaf hover:underline">
+                    <button onClick={() => openTemplate(task)} className="font-medium text-sorted-leaf hover:underline">
                       Log now
                     </button>
-                    <button onClick={() => handleDelete(task)} className="text-park-ink/40 hover:text-red-500">
+                    <button onClick={() => handleDelete(task)} className="text-sorted-ink-soft hover:text-red-500">
                       remove
                     </button>
                   </div>
                 </div>
 
                 {openId === task.id && (
-                  <div className="mt-3 space-y-2 border-t border-park-leaf/10 pt-3">
+                  <div className="mt-3 space-y-2 border-t border-sorted-border pt-3">
                     {DEFAULT_TEMPLATES[task.taskType].fields.map((field) => (
                       <div key={field.key}>
-                        <label className="text-xs font-medium text-park-leafdark">{field.label}</label>
+                        <label className="text-xs font-medium text-sorted-leaf-dark">{field.label}</label>
                         {field.options ? (
                           <div className="mt-1 flex flex-wrap gap-1">
                             {field.options.map((opt) => (
@@ -77,10 +77,10 @@ export default function ParkedList({
                                 key={opt}
                                 type="button"
                                 onClick={() => setFormValues((v) => ({ ...v, [field.key]: opt }))}
-                                className={`rounded-full px-2 py-1 text-xs ${
+                                className={`rounded-full px-2 py-1 text-xs font-medium transition ${
                                   formValues[field.key] === opt
-                                    ? "bg-park-leaf text-white"
-                                    : "bg-white text-park-leafdark ring-1 ring-park-leaf/20"
+                                    ? "bg-sorted-leaf text-white"
+                                    : "bg-white text-sorted-leaf-dark ring-1 ring-sorted-leaf/20 hover:bg-sorted-leaf-soft"
                                 }`}
                               >
                                 {opt}
@@ -89,7 +89,7 @@ export default function ParkedList({
                           </div>
                         ) : (
                           <input
-                            className="mt-1 w-full rounded border border-park-leaf/20 px-2 py-1 text-sm"
+                            className="mt-1 w-full rounded border border-sorted-border px-2 py-1 text-sm outline-none transition focus:border-sorted-leaf focus:ring-2 focus:ring-sorted-leaf/15"
                             value={formValues[field.key] ?? ""}
                             onChange={(e) => setFormValues((v) => ({ ...v, [field.key]: e.target.value }))}
                           />
@@ -98,7 +98,7 @@ export default function ParkedList({
                     ))}
                     <button
                       onClick={() => handleComplete(task)}
-                      className="mt-2 rounded-lg bg-park-leaf px-3 py-1 text-sm text-white hover:bg-park-leafdark"
+                      className="mt-2 rounded-lg bg-sorted-leaf px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-leaf-dark"
                     >
                       Done
                     </button>

@@ -5,4 +5,20 @@
 body {
   background-color: #faf7f2;
   color: #1f2a24;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@layer base {
+  body {
+    @apply font-sans;
+  }
+  h1, h2, h3 {
+    @apply font-display;
+  }
+}
+
+::selection {
+  background-color: #e8efe9;
+  color: #2b4d38;
 }

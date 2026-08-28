@@ -70,9 +70,9 @@ export default function BatchSuggestion({ openTasks }: { openTasks: ParkedTask[]
   }
 
   return (
-    <div className="rounded-2xl border border-park-leaf/20 bg-white p-5 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-park-leafdark">Batch window</h2>
-      <p className="mt-1 text-sm text-park-ink/70">
+    <div className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
+      <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-sorted-leaf-dark">Batch window</h2>
+      <p className="mt-1 text-sm text-sorted-ink-soft">
         {openTasks.length} task{openTasks.length === 1 ? "" : "s"} parked — roughly {estimatedMinutes} minutes to
         clear them in one sitting.
       </p>
@@ -80,7 +80,7 @@ export default function BatchSuggestion({ openTasks }: { openTasks: ParkedTask[]
       {!googleConnected ? (
         <button
           onClick={() => signIn("google")}
-          className="mt-3 rounded-full bg-park-leaf px-3 py-1 text-sm text-white hover:bg-park-leafdark"
+          className="mt-3 rounded-full bg-sorted-leaf px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-leaf-dark"
         >
           Connect Google Calendar for a real suggestion
         </button>
@@ -88,7 +88,7 @@ export default function BatchSuggestion({ openTasks }: { openTasks: ParkedTask[]
         <button
           onClick={suggest}
           disabled={loading || openTasks.length === 0}
-          className="mt-3 rounded-full bg-park-leaf px-3 py-1 text-sm text-white hover:bg-park-leafdark disabled:opacity-40"
+          className="mt-3 rounded-full bg-sorted-leaf px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-leaf-dark disabled:opacity-40"
         >
           {loading ? "Checking your calendar…" : "Suggest a batch window"}
         </button>
@@ -96,7 +96,7 @@ export default function BatchSuggestion({ openTasks }: { openTasks: ParkedTask[]
 
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
       {slot && (
-        <p className="mt-3 rounded-lg bg-park-leaf/10 px-3 py-2 text-sm text-park-leafdark">
+        <p className="mt-3 rounded-lg bg-sorted-leaf-soft px-3 py-2 text-sm text-sorted-leaf-dark">
           {slot.start.toLocaleDateString(undefined, { weekday: "long" })}{" "}
           {slot.start.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}–
           {slot.end.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })} — your next clear gap.
