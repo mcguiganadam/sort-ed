@@ -22,7 +22,7 @@ const bodyFont = Inter({
 
 export const metadata: Metadata = {
   title: "SortEd — consider it sorted",
-  description: "Ten-second capture that keeps admin out of your planning block, sorted into a batch window instead.",
+  description: "Quick capture that keeps admin out of your planning block, sorted into a batch window instead.",
   // Favicon comes from app/icon.svg via Next's file-based metadata
   // convention — no manual <link> needed here.
 };

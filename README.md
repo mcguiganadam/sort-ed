@@ -2,7 +2,7 @@
 
 Consider it sorted.
 
-A ten-second capture tool that protects teachers' planning time by moving
+A quick-capture tool that protects teachers' planning time by moving
 admin work (behaviour notes, parent replies, leader updates, meeting prep,
 assessment entry) into a scheduled batch window instead of letting it
 interrupt the block.
@@ -89,7 +89,7 @@ sorted/
       calendar/freebusy/         # proxy: free/busy for next 5 school days
       slack/scan/                # proxy: recent channel history, flagged
   components/
-    TaskCapture.tsx               # Screen 1: ten-second capture
+    TaskCapture.tsx               # Screen 1: quick capture
     AutoDetectPanel.tsx           # Gmail/Slack scan + sort/draft-reply
     BatchSuggestion.tsx           # Screen 2: batch window from calendar
     SortedList.tsx                # Screen 3: structured tap-to-fill templates

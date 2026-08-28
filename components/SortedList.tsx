@@ -38,7 +38,7 @@ export default function SortedList({
   if (tasks.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-sorted-border p-6 text-center text-sm text-sorted-ink-soft">
-        Nothing sorted yet. Enjoy the quiet.
+        Nothing here yet — capture something above when it happens.
       </div>
     );
   }

@@ -24,7 +24,7 @@ export default function TaskCapture({ onSorted }: { onSorted: () => void }) {
   return (
     <form onSubmit={handleSort} className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
       <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-sorted-primary-dark">
-        Ten-second capture
+        Quick capture
       </h2>
       <div className="mt-3 flex flex-wrap gap-2">
         {TASK_TYPES.map((t) => (
