@@ -1,6 +1,6 @@
 // lib/heuristics.ts
 //
-// Cheap, explainable, keyword-based "does this look like a parkable admin
+// Cheap, explainable, keyword-based "does this look like a sortable admin
 // task" detector. Deliberately NOT an LLM call: no message content should
 // have to leave the teacher's session and hit a third-party model API to
 // get flagged, and a transparent rule the teacher can see beats a black box

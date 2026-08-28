@@ -1,7 +1,7 @@
 // lib/db.ts
 //
 // ── THE "NO DATA STORED" PROMISE ──────────────────────────────────────────
-// Everything a teacher parks lives ONLY in this browser's IndexedDB. SortEd
+// Everything a teacher sorts lives ONLY in this browser's IndexedDB. SortEd
 // has no database, no server-side user table, no cloud sync. If the app's
 // servers vanished tomorrow, nothing here would be lost or exposed, because
 // nothing here ever left this device. Clearing browser data clears SortEd.
@@ -20,7 +20,7 @@ export type TaskType =
   | "leader"
   | "meeting";
 
-export interface ParkedTask {
+export interface SortedTask {
   id: string;
   taskType: TaskType;
   initialCapture: string; // "M.O. — lunchtime, playground"
@@ -39,10 +39,10 @@ export interface TaskTemplate {
   isDefault: boolean;
 }
 
-interface ParkItDB extends DBSchema {
+interface SortedDB extends DBSchema {
   tasks: {
     key: string;
-    value: ParkedTask;
+    value: SortedTask;
     indexes: { "by-type": TaskType; "by-created": string };
   };
   templates: {
@@ -54,14 +54,14 @@ interface ParkItDB extends DBSchema {
 const DB_NAME = "sorted";
 const DB_VERSION = 1;
 
-let dbPromise: Promise<IDBPDatabase<ParkItDB>> | null = null;
+let dbPromise: Promise<IDBPDatabase<SortedDB>> | null = null;
 
 function getDB() {
   if (typeof window === "undefined") {
     throw new Error("SortEd storage is browser-only — no server-side reads.");
   }
   if (!dbPromise) {
-    dbPromise = openDB<ParkItDB>(DB_NAME, DB_VERSION, {
+    dbPromise = openDB<SortedDB>(DB_NAME, DB_VERSION, {
       upgrade(db) {
         const taskStore = db.createObjectStore("tasks", { keyPath: "id" });
         taskStore.createIndex("by-type", "taskType");
@@ -77,14 +77,14 @@ function newId() {
   return crypto.randomUUID();
 }
 
-export async function parkTask(input: {
+export async function sortTask(input: {
   taskType: TaskType;
   initialCapture: string;
-  source?: ParkedTask["source"];
+  source?: SortedTask["source"];
   sourceRef?: string;
-}): Promise<ParkedTask> {
+}): Promise<SortedTask> {
   const db = await getDB();
-  const task: ParkedTask = {
+  const task: SortedTask = {
     id: newId(),
     taskType: input.taskType,
     initialCapture: input.initialCapture,
@@ -97,14 +97,14 @@ export async function parkTask(input: {
   return task;
 }
 
-export async function listParkedTasks(): Promise<ParkedTask[]> {
+export async function listSortedTasks(): Promise<SortedTask[]> {
   const db = await getDB();
   const all = await db.getAll("tasks");
   return all.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
-export async function listOpenTasks(): Promise<ParkedTask[]> {
-  const tasks = await listParkedTasks();
+export async function listOpenTasks(): Promise<SortedTask[]> {
+  const tasks = await listSortedTasks();
   return tasks.filter((t) => !t.completedAt);
 }
 
@@ -132,7 +132,7 @@ export async function clearAllData(): Promise<void> {
 }
 
 export async function exportAllData(): Promise<string> {
-  const tasks = await listParkedTasks();
+  const tasks = await listSortedTasks();
   const db = await getDB();
   const templates = await db.getAll("templates");
   return JSON.stringify({ exportedAt: new Date().toISOString(), tasks, templates }, null, 2);

@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { ParkedTask, listOpenTasks, exportAllData, clearAllData } from "@/lib/db";
+import { SortedTask, listOpenTasks, exportAllData, clearAllData } from "@/lib/db";
 import TaskCapture from "@/components/TaskCapture";
-import ParkedList from "@/components/ParkedList";
+import SortedList from "@/components/SortedList";
 import AutoDetectPanel from "@/components/AutoDetectPanel";
 import BatchSuggestion from "@/components/BatchSuggestion";
 import KofiButton from "@/components/KofiButton";
@@ -14,7 +14,7 @@ function Mark() {
   // at header size rather than loading the favicon file separately.
   return (
     <svg width="34" height="34" viewBox="0 0 32 32" className="shrink-0">
-      <rect width="32" height="32" rx="9" fill="#3f6b4f" />
+      <rect width="32" height="32" rx="9" fill="#3f5f8a" />
       <path
         d="M9 17l5 5 9-11.5"
         stroke="#faf7f2"
@@ -29,7 +29,7 @@ function Mark() {
 
 export default function Home() {
   const { data: session, status } = useSession();
-  const [tasks, setTasks] = useState<ParkedTask[]>([]);
+  const [tasks, setTasks] = useState<SortedTask[]>([]);
 
   const refresh = useCallback(async () => {
     setTasks(await listOpenTasks());
@@ -51,7 +51,7 @@ export default function Home() {
   }
 
   async function handleClear() {
-    if (!confirm("Delete everything parked on this device? This can't be undone.")) return;
+    if (!confirm("Delete everything sorted on this device? This can't be undone.")) return;
     await clearAllData();
     refresh();
   }
@@ -61,20 +61,20 @@ export default function Home() {
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Mark />
-          <h1 className="font-display text-2xl font-bold leading-tight text-sorted-leaf-dark">
+          <h1 className="font-display text-2xl font-bold leading-tight text-sorted-primary-dark">
             SortEd
           </h1>
         </div>
         <KofiButton />
       </header>
 
-      <div className="mt-6 flex flex-wrap items-center gap-3 rounded-full bg-sorted-leaf-soft/60 px-4 py-2 text-sm">
+      <div className="mt-6 flex flex-wrap items-center gap-3 rounded-full bg-sorted-primary-soft/60 px-4 py-2 text-sm">
         {status === "authenticated" ? (
           <>
             <span className="text-sorted-ink-soft">Signed in as {session?.user?.email}</span>
             <button
               onClick={() => signOut()}
-              className="font-medium text-sorted-leaf-dark underline decoration-dotted underline-offset-2 hover:text-sorted-leaf"
+              className="font-medium text-sorted-primary-dark underline decoration-dotted underline-offset-2 hover:text-sorted-primary"
             >
               Sign out
             </button>
@@ -83,13 +83,13 @@ export default function Home() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => signIn("google")}
-              className="rounded-full bg-white px-3 py-1 font-medium text-sorted-leaf-dark ring-1 ring-sorted-leaf/25 transition hover:bg-sorted-leaf hover:text-white hover:ring-sorted-leaf"
+              className="rounded-full bg-white px-3 py-1 font-medium text-sorted-primary-dark ring-1 ring-sorted-primary/25 transition hover:bg-sorted-primary hover:text-white hover:ring-sorted-primary"
             >
               Connect Google
             </button>
             <button
               onClick={() => signIn("slack")}
-              className="rounded-full bg-white px-3 py-1 font-medium text-sorted-leaf-dark ring-1 ring-sorted-leaf/25 transition hover:bg-sorted-leaf hover:text-white hover:ring-sorted-leaf"
+              className="rounded-full bg-white px-3 py-1 font-medium text-sorted-primary-dark ring-1 ring-sorted-primary/25 transition hover:bg-sorted-primary hover:text-white hover:ring-sorted-primary"
             >
               Connect Slack
             </button>
@@ -98,10 +98,10 @@ export default function Home() {
       </div>
 
       <div className="mt-8 grid gap-5">
-        <TaskCapture onParked={refresh} />
+        <TaskCapture onSorted={refresh} />
         <BatchSuggestion openTasks={tasks} />
-        <AutoDetectPanel onParked={refresh} />
-        <ParkedList tasks={tasks} onChanged={refresh} />
+        <AutoDetectPanel onSorted={refresh} />
+        <SortedList tasks={tasks} onChanged={refresh} />
       </div>
 
       <footer className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-sorted-border pt-6 text-xs text-sorted-ink-soft">

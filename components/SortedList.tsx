@@ -1,36 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import { ParkedTask, completeTask, deleteTask } from "@/lib/db";
+import { SortedTask, completeTask, deleteTask } from "@/lib/db";
 import { DEFAULT_TEMPLATES, TASK_TYPE_LABELS } from "@/lib/templates";
 
-export default function ParkedList({
+export default function SortedList({
   tasks,
   onChanged,
 }: {
-  tasks: ParkedTask[];
+  tasks: SortedTask[];
   onChanged: () => void;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
 
-  const grouped = tasks.reduce<Record<string, ParkedTask[]>>((acc, t) => {
+  const grouped = tasks.reduce<Record<string, SortedTask[]>>((acc, t) => {
     (acc[t.taskType] ??= []).push(t);
     return acc;
   }, {});
 
-  function openTemplate(task: ParkedTask) {
+  function openTemplate(task: SortedTask) {
     setOpenId(task.id);
     setFormValues({});
   }
 
-  async function handleComplete(task: ParkedTask) {
+  async function handleComplete(task: SortedTask) {
     await completeTask(task.id, formValues);
     setOpenId(null);
     onChanged();
   }
 
-  async function handleDelete(task: ParkedTask) {
+  async function handleDelete(task: SortedTask) {
     await deleteTask(task.id);
     onChanged();
   }
@@ -38,7 +38,7 @@ export default function ParkedList({
   if (tasks.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-sorted-border p-6 text-center text-sm text-sorted-ink-soft">
-        Nothing parked. Enjoy the quiet.
+        Nothing sorted yet. Enjoy the quiet.
       </div>
     );
   }
@@ -47,7 +47,7 @@ export default function ParkedList({
     <div className="space-y-4">
       {Object.entries(grouped).map(([type, group]) => (
         <div key={type} className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
-          <h3 className="font-display text-sm font-semibold text-sorted-leaf-dark">
+          <h3 className="font-display text-sm font-semibold text-sorted-primary-dark">
             {TASK_TYPE_LABELS[type as keyof typeof TASK_TYPE_LABELS]} ({group.length})
           </h3>
           <ul className="mt-3 space-y-2">
@@ -56,7 +56,7 @@ export default function ParkedList({
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm text-sorted-ink">{task.initialCapture}</span>
                   <div className="flex gap-3 text-xs">
-                    <button onClick={() => openTemplate(task)} className="font-medium text-sorted-leaf hover:underline">
+                    <button onClick={() => openTemplate(task)} className="font-medium text-sorted-primary hover:underline">
                       Log now
                     </button>
                     <button onClick={() => handleDelete(task)} className="text-sorted-ink-soft hover:text-red-500">
@@ -69,7 +69,7 @@ export default function ParkedList({
                   <div className="mt-3 space-y-2 border-t border-sorted-border pt-3">
                     {DEFAULT_TEMPLATES[task.taskType].fields.map((field) => (
                       <div key={field.key}>
-                        <label className="text-xs font-medium text-sorted-leaf-dark">{field.label}</label>
+                        <label className="text-xs font-medium text-sorted-primary-dark">{field.label}</label>
                         {field.options ? (
                           <div className="mt-1 flex flex-wrap gap-1">
                             {field.options.map((opt) => (
@@ -79,8 +79,8 @@ export default function ParkedList({
                                 onClick={() => setFormValues((v) => ({ ...v, [field.key]: opt }))}
                                 className={`rounded-full px-2 py-1 text-xs font-medium transition ${
                                   formValues[field.key] === opt
-                                    ? "bg-sorted-leaf text-white"
-                                    : "bg-white text-sorted-leaf-dark ring-1 ring-sorted-leaf/20 hover:bg-sorted-leaf-soft"
+                                    ? "bg-sorted-primary text-white"
+                                    : "bg-white text-sorted-primary-dark ring-1 ring-sorted-primary/20 hover:bg-sorted-primary-soft"
                                 }`}
                               >
                                 {opt}
@@ -89,7 +89,7 @@ export default function ParkedList({
                           </div>
                         ) : (
                           <input
-                            className="mt-1 w-full rounded border border-sorted-border px-2 py-1 text-sm outline-none transition focus:border-sorted-leaf focus:ring-2 focus:ring-sorted-leaf/15"
+                            className="mt-1 w-full rounded border border-sorted-border px-2 py-1 text-sm outline-none transition focus:border-sorted-primary focus:ring-2 focus:ring-sorted-primary/15"
                             value={formValues[field.key] ?? ""}
                             onChange={(e) => setFormValues((v) => ({ ...v, [field.key]: e.target.value }))}
                           />
@@ -98,7 +98,7 @@ export default function ParkedList({
                     ))}
                     <button
                       onClick={() => handleComplete(task)}
-                      className="mt-2 rounded-lg bg-sorted-leaf px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-leaf-dark"
+                      className="mt-2 rounded-lg bg-sorted-primary px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-primary-dark"
                     >
                       Done
                     </button>

@@ -16,10 +16,10 @@ the old one, which is fine — it's a record of that point in time.
 
 This build is a specific variant of the original plan:
 
-- **No database, ever.** Parked tasks live only in the teacher's browser
+- **No database, ever.** Sorted tasks live only in the teacher's browser
   (IndexedDB). There is no backend user table, no cloud sync, no Supabase.
 - **Reads Gmail, Google Calendar, and Slack** (read-only) to auto-detect
-  parkable tasks, suggest a real batch window from the teacher's actual
+  sortable tasks, suggest a real batch window from the teacher's actual
   calendar, and help draft replies.
 - **Ko-fi donations only.** No subscriptions, no Stripe, no feature gate.
   Every feature is free for every teacher; a Ko-fi button is a visible,
@@ -37,7 +37,7 @@ most jurisdictions). The cheapest way to make a promise like "we never see
 your students' data" actually true is to not build the pipe that could
 carry it:
 
-- Parked tasks, templates, and logs are written to **IndexedDB in the
+- Sorted tasks, templates, and logs are written to **IndexedDB in the
   browser** (`lib/db.ts`) and never sent anywhere.
 - Gmail/Calendar/Slack are read **live, per-request**, by serverless
   functions that use the session's access token for that one call and then
@@ -90,9 +90,9 @@ sorted/
       slack/scan/                # proxy: recent channel history, flagged
   components/
     TaskCapture.tsx               # Screen 1: ten-second capture
-    AutoDetectPanel.tsx           # Gmail/Slack scan + park/draft-reply
+    AutoDetectPanel.tsx           # Gmail/Slack scan + sort/draft-reply
     BatchSuggestion.tsx           # Screen 2: batch window from calendar
-    ParkedList.tsx                # Screen 3: structured tap-to-fill templates
+    SortedList.tsx                # Screen 3: structured tap-to-fill templates
     KofiButton.tsx
   lib/
     db.ts                         # IndexedDB — the only place tasks live

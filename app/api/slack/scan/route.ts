@@ -1,6 +1,6 @@
 // app/api/slack/scan/route.ts
 //
-// Same idea as the Gmail scan: read a little, flag what looks parkable,
+// Same idea as the Gmail scan: read a little, flag what looks sortable,
 // return it, forget it. Uses the teacher's own Slack USER token (not a bot
 // token) so it only ever sees what that teacher can already see, and only
 // requests read-history scopes — SortEd cannot post, edit, or delete

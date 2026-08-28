@@ -1,7 +1,7 @@
 // app/api/gmail/scan/route.ts
 //
 // Proxies a small, recent slice of Gmail to the browser so SortEd can
-// suggest "this looks parkable." Nothing here is written to disk or a
+// suggest "this looks sortable." Nothing here is written to disk or a
 // database: the access token is read from the encrypted session cookie for
 // the length of this single request, used to call Gmail, and the response
 // is streamed straight back to the browser. When this function returns,
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
       const snippet: string = msg.snippet ?? "";
 
       const suggestedType = classifySnippet(`${subject} ${snippet}`, from);
-      if (!suggestedType) continue; // only surface things that look parkable
+      if (!suggestedType) continue; // only surface things that look sortable
 
       items.push({
         ref: id,

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSession, signIn } from "next-auth/react";
-import { parkTask } from "@/lib/db";
+import { sortTask } from "@/lib/db";
 import { buildMailtoDraft } from "@/lib/mailto";
 import { TASK_TYPE_LABELS } from "@/lib/templates";
 
@@ -19,13 +19,13 @@ function SourceBlock({
   connected,
   provider,
   endpoint,
-  onParked,
+  onSorted,
 }: {
   label: string;
   connected: boolean;
   provider: "google" | "slack";
   endpoint: string;
-  onParked: () => void;
+  onSorted: () => void;
 }) {
   const [items, setItems] = useState<DetectedItem[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -51,25 +51,25 @@ function SourceBlock({
     }
   }
 
-  async function handlePark(item: DetectedItem) {
+  async function handleSort(item: DetectedItem) {
     if (!item.suggestedType) return;
-    await parkTask({
+    await sortTask({
       taskType: item.suggestedType,
       initialCapture: `${item.suggestedInitials} — via ${label}`,
       source: provider === "google" ? "gmail" : "slack",
       sourceRef: item.ref,
     });
     setDismissed((prev) => new Set(prev).add(item.ref));
-    onParked();
+    onSorted();
   }
 
   if (!connected) {
     return (
-      <div className="rounded-xl border border-dashed border-sorted-border p-4 text-sm text-sorted-leaf-dark">
+      <div className="rounded-xl border border-dashed border-sorted-border p-4 text-sm text-sorted-primary-dark">
         <p className="mb-2">{label} isn't connected yet — nothing is read until you sign in.</p>
         <button
           onClick={() => signIn(provider)}
-          className="rounded-full bg-sorted-leaf px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-leaf-dark"
+          className="rounded-full bg-sorted-primary px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-primary-dark"
         >
           Connect {label}
         </button>
@@ -80,18 +80,18 @@ function SourceBlock({
   return (
     <div className="rounded-xl border border-sorted-border bg-white p-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-display text-sm font-semibold text-sorted-leaf-dark">{label}</h3>
+        <h3 className="font-display text-sm font-semibold text-sorted-primary-dark">{label}</h3>
         <button
           onClick={scan}
           disabled={loading}
-          className="text-xs font-medium text-sorted-leaf underline decoration-dotted hover:text-sorted-leaf-dark"
+          className="text-xs font-medium text-sorted-primary underline decoration-dotted hover:text-sorted-primary-dark"
         >
           {loading ? "Scanning…" : "Scan recent activity"}
         </button>
       </div>
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
       {items && items.length === 0 && !error && (
-        <p className="mt-2 text-xs text-sorted-ink-soft">Nothing that looks parkable right now.</p>
+        <p className="mt-2 text-xs text-sorted-ink-soft">Nothing that looks sortable right now.</p>
       )}
       <ul className="mt-3 space-y-2">
         {items
@@ -103,14 +103,14 @@ function SourceBlock({
                   <strong>{item.from}</strong> — {item.snippet}
                 </span>
                 {item.suggestedType && (
-                  <span className="whitespace-nowrap rounded-full bg-sorted-leaf-soft px-2 py-0.5 text-xs text-sorted-leaf-dark">
+                  <span className="whitespace-nowrap rounded-full bg-sorted-primary-soft px-2 py-0.5 text-xs text-sorted-primary-dark">
                     {TASK_TYPE_LABELS[item.suggestedType as keyof typeof TASK_TYPE_LABELS]}
                   </span>
                 )}
               </div>
               <div className="mt-2 flex gap-3 text-xs">
-                <button onClick={() => handlePark(item)} className="font-medium text-sorted-leaf hover:underline">
-                  Park it
+                <button onClick={() => handleSort(item)} className="font-medium text-sorted-primary hover:underline">
+                  Sort it
                 </button>
                 {provider === "google" && (
                   <a
@@ -132,19 +132,19 @@ function SourceBlock({
   );
 }
 
-export default function AutoDetectPanel({ onParked }: { onParked: () => void }) {
+export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) {
   const { data: session } = useSession();
   const googleConnected = Boolean((session as any)?.googleConnected);
   const slackConnected = Boolean((session as any)?.slackConnected);
 
   return (
     <div className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
-      <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-sorted-leaf-dark">
+      <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-sorted-primary-dark">
         Auto-detect from Gmail &amp; Slack
       </h2>
       <p className="mt-1 text-xs text-sorted-ink-soft">
         Read-only. Nothing scanned here is stored — it's only ever held in this browser tab
-        while you decide what to park.
+        while you decide what to sort.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <SourceBlock
@@ -152,14 +152,14 @@ export default function AutoDetectPanel({ onParked }: { onParked: () => void }) 
           connected={googleConnected}
           provider="google"
           endpoint="/api/gmail/scan"
-          onParked={onParked}
+          onSorted={onSorted}
         />
         <SourceBlock
           label="Slack"
           connected={slackConnected}
           provider="slack"
           endpoint="/api/slack/scan"
-          onParked={onParked}
+          onSorted={onSorted}
         />
       </div>
     </div>
