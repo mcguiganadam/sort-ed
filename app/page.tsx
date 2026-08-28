@@ -104,24 +104,29 @@ export default function Home() {
         <SortedList tasks={tasks} onChanged={refresh} />
       </div>
 
-      <footer className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-sorted-border pt-6 text-xs text-sorted-ink-soft">
-        <p className="max-w-md">
-          Everything above lives only in this browser. Your data remains private.
-        </p>
-        <div className="flex gap-4">
-          <a
-            href="mailto:sorted.help@proton.me"
-            className="underline decoration-dotted underline-offset-2 hover:text-sorted-ink"
-          >
-            Contact
-          </a>
-          <button onClick={handleExport} className="underline decoration-dotted underline-offset-2 hover:text-sorted-ink">
-            Export my data
-          </button>
-          <button onClick={handleClear} className="underline decoration-dotted underline-offset-2 hover:text-red-500">
-            Delete everything
-          </button>
+      <footer className="mt-12 border-t border-sorted-border pt-6 text-xs text-sorted-ink-soft">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="max-w-md">
+            Everything above stays private — nothing is stored on a server, ever.
+          </p>
+          <div className="flex gap-4">
+            <a
+              href="mailto:sorted.help@proton.me"
+              className="underline decoration-dotted underline-offset-2 hover:text-sorted-ink"
+            >
+              Contact
+            </a>
+            <button onClick={handleExport} className="underline decoration-dotted underline-offset-2 hover:text-sorted-ink">
+              Export my data
+            </button>
+            <button onClick={handleClear} className="underline decoration-dotted underline-offset-2 hover:text-red-500">
+              Delete everything
+            </button>
+          </div>
         </div>
+        <p className="mt-4 text-[11px] text-sorted-ink-soft/70">
+          © {new Date().getFullYear()} SortEd.
+        </p>
       </footer>
     </main>
   );
