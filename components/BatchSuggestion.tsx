@@ -61,7 +61,7 @@ export default function BatchSuggestion({ openTasks }: { openTasks: SortedTask[]
       }
       const found = findFreeSlot(json.busy ?? [], estimatedMinutes);
       setSlot(found);
-      if (!found) setError("No clear gap found in the next 5 school days — try shortening the batch.");
+      if (!found) setError("No clear gap found in the next 5 school days — try sorting fewer at once.");
     } catch {
       setError("Network error while reading calendar.");
     } finally {
@@ -71,10 +71,9 @@ export default function BatchSuggestion({ openTasks }: { openTasks: SortedTask[]
 
   return (
     <div className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
-      <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-sorted-primary-dark">Batch window</h2>
+      <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-sorted-primary-dark">Find a clear moment</h2>
       <p className="mt-1 text-sm text-sorted-ink-soft">
-        {openTasks.length} task{openTasks.length === 1 ? "" : "s"} sorted — roughly {estimatedMinutes} minutes to
-        clear them in one sitting.
+        {openTasks.length} task{openTasks.length === 1 ? "" : "s"} sorted — waiting for a clear moment to clear them.
       </p>
 
       {!googleConnected ? (
@@ -82,7 +81,7 @@ export default function BatchSuggestion({ openTasks }: { openTasks: SortedTask[]
           onClick={() => signIn("google")}
           className="mt-3 rounded-full bg-sorted-primary px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-primary-dark"
         >
-          Connect Google Calendar for a real suggestion
+          Connect Google Calendar to find one
         </button>
       ) : (
         <button
@@ -90,7 +89,7 @@ export default function BatchSuggestion({ openTasks }: { openTasks: SortedTask[]
           disabled={loading || openTasks.length === 0}
           className="mt-3 rounded-full bg-sorted-primary px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-primary-dark disabled:opacity-40"
         >
-          {loading ? "Checking your calendar…" : "Suggest a batch window"}
+          {loading ? "Checking your calendar…" : "Find a clear moment"}
         </button>
       )}
 

@@ -91,7 +91,7 @@ sorted/
   components/
     TaskCapture.tsx               # Screen 1: quick capture
     AutoDetectPanel.tsx           # Gmail/Slack scan + sort/draft-reply
-    BatchSuggestion.tsx           # Screen 2: batch window from calendar
+    BatchSuggestion.tsx           # Screen 2: a clear moment, found from the calendar
     SortedList.tsx                # Screen 3: structured tap-to-fill templates
     KofiButton.tsx
   lib/
