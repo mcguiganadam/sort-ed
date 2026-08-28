@@ -14,11 +14,14 @@
 import { openDB, DBSchema, IDBPDatabase } from "idb";
 
 export type TaskType =
-  | "behaviour"
-  | "assessment"
+  | "pastoral"
+  | "inclusion"
   | "parent"
-  | "leader"
-  | "meeting";
+  | "leadership"
+  | "admin"
+  | "planning"
+  | "assessment"
+  | "ideas";
 
 export interface SortedTask {
   id: string;

@@ -12,9 +12,12 @@ import { TaskType } from "./db";
 
 const OPENERS: Record<TaskType, string> = {
   parent: "Thanks so much for reaching out about this — here's an update:",
-  leader: "Thanks for the ping — here's where this stands:",
-  behaviour: "Following up on this — here's what happened and what I've done:",
-  meeting: "Happy to find a time — here's my availability:",
+  leadership: "Thanks for the ping — here's where this stands:",
+  pastoral: "Following up on this — here's what happened and what I've done:",
+  inclusion: "Following up on this — here's where things stand:",
+  admin: "Following up on this:",
+  planning: "Here's where this is at:",
+  ideas: "Following up on this:",
   assessment: "Sharing the update on this:",
 };
 

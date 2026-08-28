@@ -4,10 +4,19 @@ import { useState } from "react";
 import { sortTask, TaskType } from "@/lib/db";
 import { TASK_TYPE_LABELS } from "@/lib/templates";
 
-const TASK_TYPES: TaskType[] = ["behaviour", "assessment", "parent", "leader", "meeting"];
+const TASK_TYPES: TaskType[] = [
+  "pastoral",
+  "inclusion",
+  "parent",
+  "leadership",
+  "admin",
+  "planning",
+  "assessment",
+  "ideas",
+];
 
 export default function TaskCapture({ onSorted }: { onSorted: () => void }) {
-  const [taskType, setTaskType] = useState<TaskType>("behaviour");
+  const [taskType, setTaskType] = useState<TaskType>("pastoral");
   const [note, setNote] = useState("");
   const [justSorted, setJustSorted] = useState(false);
 

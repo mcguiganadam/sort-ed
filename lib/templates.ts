@@ -4,21 +4,21 @@
 import { TaskTemplate, TaskType } from "./db";
 
 export const DEFAULT_TEMPLATES: Record<TaskType, TaskTemplate> = {
-  behaviour: {
-    id: "default-behaviour",
-    taskType: "behaviour",
-    templateName: "Behaviour log",
+  pastoral: {
+    id: "default-pastoral",
+    taskType: "pastoral",
+    templateName: "Pastoral log",
     isDefault: true,
     fields: [
       {
         key: "incidentType",
-        label: "Incident type",
-        options: ["Conflict", "Refusal", "Language", "Property", "Other"],
+        label: "Type",
+        options: ["Wellbeing check-in", "Conflict", "Refusal", "Safeguarding note", "Other"],
       },
       {
         key: "actionTaken",
         label: "Action taken",
-        options: ["Verbal warning", "Time out", "Restorative chat", "Referred up", "Logged only"],
+        options: ["Verbal chat", "Time out", "Restorative conversation", "Referred up", "Logged only"],
       },
       {
         key: "followUp",
@@ -27,18 +27,21 @@ export const DEFAULT_TEMPLATES: Record<TaskType, TaskTemplate> = {
       },
     ],
   },
-  assessment: {
-    id: "default-assessment",
-    taskType: "assessment",
-    templateName: "Assessment entry",
+  inclusion: {
+    id: "default-inclusion",
+    taskType: "inclusion",
+    templateName: "Inclusion note",
     isDefault: true,
     fields: [
-      { key: "subject", label: "Subject" },
-      { key: "score", label: "Score / level" },
       {
-        key: "flag",
-        label: "Flag",
-        options: ["On track", "Watch", "Needs support", "Exceeding"],
+        key: "supportType",
+        label: "Support type",
+        options: ["Learning support", "EAL", "SEN referral", "Accommodation request", "Other"],
+      },
+      {
+        key: "status",
+        label: "Status",
+        options: ["Monitoring", "In progress", "Needs review", "Resolved"],
       },
     ],
   },
@@ -60,10 +63,10 @@ export const DEFAULT_TEMPLATES: Record<TaskType, TaskTemplate> = {
       },
     ],
   },
-  leader: {
-    id: "default-leader",
-    taskType: "leader",
-    templateName: "Reply to leader",
+  leadership: {
+    id: "default-leadership",
+    taskType: "leadership",
+    templateName: "Reply to leadership",
     isDefault: true,
     fields: [
       {
@@ -78,26 +81,84 @@ export const DEFAULT_TEMPLATES: Record<TaskType, TaskTemplate> = {
       },
     ],
   },
-  meeting: {
-    id: "default-meeting",
-    taskType: "meeting",
-    templateName: "Meeting prep",
+  admin: {
+    id: "default-admin",
+    taskType: "admin",
+    templateName: "Admin task",
     isDefault: true,
     fields: [
-      { key: "withWhom", label: "With whom" },
       {
-        key: "prepNeeded",
-        label: "Prep needed",
-        options: ["Bring data", "Bring examples of work", "Review previous notes", "None — just show up"],
+        key: "adminType",
+        label: "Type",
+        options: ["Form / paperwork", "Data entry", "Facilities request", "Scheduling", "Other"],
+      },
+      {
+        key: "status",
+        label: "Status",
+        options: ["Not started", "In progress", "Submitted", "Done"],
+      },
+    ],
+  },
+  planning: {
+    id: "default-planning",
+    taskType: "planning",
+    templateName: "Planning note",
+    isDefault: true,
+    fields: [
+      {
+        key: "planningType",
+        label: "Type",
+        options: ["Lesson prep", "Unit planning", "Resource creation", "Curriculum review"],
+      },
+      {
+        key: "priority",
+        label: "Priority",
+        options: ["Low", "Medium", "High"],
+      },
+    ],
+  },
+  assessment: {
+    id: "default-assessment",
+    taskType: "assessment",
+    templateName: "Assessment entry",
+    isDefault: true,
+    fields: [
+      { key: "subject", label: "Subject" },
+      { key: "score", label: "Score / level" },
+      {
+        key: "flag",
+        label: "Flag",
+        options: ["On track", "Watch", "Needs support", "Exceeding"],
+      },
+    ],
+  },
+  ideas: {
+    id: "default-ideas",
+    taskType: "ideas",
+    templateName: "Idea",
+    isDefault: true,
+    fields: [
+      {
+        key: "ideaArea",
+        label: "Area",
+        options: ["Teaching", "Curriculum", "Whole-school", "Personal"],
+      },
+      {
+        key: "nextStep",
+        label: "Next step",
+        options: ["Note it", "Discuss with team", "Try next term"],
       },
     ],
   },
 };
 
 export const TASK_TYPE_LABELS: Record<TaskType, string> = {
-  behaviour: "Behaviour",
-  assessment: "Assessment",
+  pastoral: "Pastoral",
+  inclusion: "Inclusion",
   parent: "Parent",
-  leader: "Leader reply",
-  meeting: "Meeting prep",
+  leadership: "Leadership",
+  admin: "Office/Admin",
+  planning: "Planning",
+  assessment: "Assessment",
+  ideas: "Ideas",
 };

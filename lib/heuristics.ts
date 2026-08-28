@@ -20,10 +20,10 @@ export interface DetectedItem {
   suggestedInitials: string;
 }
 
-const LEADER_HINTS = ["progress update", "data by", "can you send", "eop", "senior leader", "middle leader", "slt", "please confirm"];
+const LEADERSHIP_HINTS = ["progress update", "data by", "can you send", "eop", "senior leader", "middle leader", "slt", "please confirm"];
 const PARENT_HINTS = ["my son", "my daughter", "my child", "parent", "guardian", "pickup", "concerned about", "could we meet"];
-const MEETING_HINTS = ["meeting", "calendar invite", "schedule a", "catch up", "let's find a time", "quick chat"];
-const BEHAVIOUR_HINTS = ["incident", "behaviour", "behavior", "referral", "playground", "detention"];
+const INCLUSION_HINTS = ["sen ", "iep", "eal", "additional support", "accommodation", "individual education plan", "learning support"];
+const PASTORAL_HINTS = ["incident", "behaviour", "behavior", "referral", "playground", "detention", "wellbeing", "safeguarding"];
 
 function scoreHints(text: string, hints: string[]): number {
   const lower = text.toLowerCase();
@@ -34,9 +34,9 @@ export function classifySnippet(subjectOrText: string, from: string): TaskType |
   const combined = `${subjectOrText} ${from}`;
   const scores: [TaskType, number][] = [
     ["parent", scoreHints(combined, PARENT_HINTS)],
-    ["leader", scoreHints(combined, LEADER_HINTS)],
-    ["meeting", scoreHints(combined, MEETING_HINTS)],
-    ["behaviour", scoreHints(combined, BEHAVIOUR_HINTS)],
+    ["leadership", scoreHints(combined, LEADERSHIP_HINTS)],
+    ["inclusion", scoreHints(combined, INCLUSION_HINTS)],
+    ["pastoral", scoreHints(combined, PASTORAL_HINTS)],
   ];
   scores.sort((a, b) => b[1] - a[1]);
   const [topType, topScore] = scores[0];
