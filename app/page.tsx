@@ -61,12 +61,9 @@ export default function Home() {
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Mark />
-          <div>
-            <h1 className="font-display text-2xl font-bold leading-tight text-sorted-leaf-dark">
-              SortEd
-            </h1>
-            <p className="text-sm text-sorted-ink-soft">Consider it sorted.</p>
-          </div>
+          <h1 className="font-display text-2xl font-bold leading-tight text-sorted-leaf-dark">
+            SortEd
+          </h1>
         </div>
         <KofiButton />
       </header>
