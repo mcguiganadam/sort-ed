@@ -74,16 +74,19 @@ export default function SortedList({
             </h3>
             <ul className="mt-3 space-y-2">
               {group.map((task) => {
-                const taskUrgency = task.urgency ?? "normal";
                 const isEditing = editingId === task.id;
                 return (
                   <li key={task.id} className="rounded-lg bg-sorted-bg px-3 py-2 text-sm">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={`shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${URGENCY_STYLES[taskUrgency].pill}`}
-                      >
-                        {URGENCY_STYLES[taskUrgency].label}
-                      </span>
+                      {/* No urgency label here any more (Adam: "The Next label
+                          (also Urgent and Later) not needed as the box does
+                          this job.") — the section's own coloured box (see
+                          style.box below) already says which one this is;
+                          repeating it as a per-row pill was redundant. The
+                          category pill stays, and stays a pill on purpose
+                          (Adam: "should have a pill around it to have it
+                          stand out from the sorted task") — it's the one
+                          piece of information the box's colour can't convey. */}
                       <span
                         className={`shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${CATEGORY_STYLES[task.taskType]}`}
                       >
