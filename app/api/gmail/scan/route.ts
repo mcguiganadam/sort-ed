@@ -7,13 +7,23 @@
 // is streamed straight back to the browser. When this function returns,
 // nothing about the request survives on the server.
 //
-// Only subject lines + senders + a short snippet are fetched — never full
-// message bodies — which is also why the heuristic classifier in
-// lib/heuristics.ts works off snippets rather than full text.
+// Only subject lines + senders + Gmail's own short snippet are fetched —
+// never full message bodies. The "who/what" summary line built for the
+// feed (lib/heuristics.ts summarize()) is local string formatting of that
+// same snippet, not a separate summarisation call — this app reads school
+// email, and nothing beyond what's needed to classify + display should
+// leave this request, let alone reach a third-party model API.
 
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { classifySnippet, initialsFrom, DetectedItem } from "@/lib/heuristics";
+import {
+  classifySnippet,
+  cleanSenderName,
+  initialsFrom,
+  scoreUrgency,
+  summarize,
+  DetectedItem,
+} from "@/lib/heuristics";
 
 export const dynamic = "force-dynamic";
 
@@ -50,17 +60,26 @@ export async function GET(req: NextRequest) {
       const headers: { name: string; value: string }[] = msg.payload?.headers ?? [];
       const from = headers.find((h) => h.name === "From")?.value ?? "Unknown";
       const subject = headers.find((h) => h.name === "Subject")?.value ?? "(no subject)";
-      const snippet: string = msg.snippet ?? "";
+      // Gmail's own short preview of the message body, already generated
+      // by Google as part of the message resource we're fetching anyway.
+      const rawSnippet: string = msg.snippet ?? "";
+      const classifyText = `${subject} ${rawSnippet}`;
 
-      const suggestedType = classifySnippet(`${subject} ${snippet}`, from);
+      const suggestedType = classifySnippet(classifyText, from);
       if (!suggestedType) continue; // only surface things that look sortable
+
+      const timestamp = Number(msg.internalDate) || Date.now();
 
       items.push({
         ref: id,
-        from,
-        snippet: subject,
+        from: cleanSenderName(from),
+        subject,
+        snippet: summarize({ subject, body: rawSnippet }),
         suggestedType,
         suggestedInitials: initialsFrom(from),
+        urgency: scoreUrgency(classifyText, from),
+        timestamp,
+        source: "gmail",
       });
     }
 

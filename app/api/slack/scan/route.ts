@@ -8,7 +8,14 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { classifySnippet, initialsFrom, DetectedItem } from "@/lib/heuristics";
+import {
+  classifySnippet,
+  cleanSlackText,
+  initialsFrom,
+  scoreUrgency,
+  summarize,
+  DetectedItem,
+} from "@/lib/heuristics";
 
 export const dynamic = "force-dynamic";
 
@@ -56,17 +63,24 @@ export async function GET(req: NextRequest) {
       if (!histJson.ok) continue;
 
       for (const msg of histJson.messages ?? []) {
-        const text: string = msg.text ?? "";
+        const rawText: string = msg.text ?? "";
+        const cleanedText = cleanSlackText(rawText);
         const from = channel.name ? `#${channel.name}` : "DM";
-        const suggestedType = classifySnippet(text, from);
+
+        const suggestedType = classifySnippet(cleanedText, from);
         if (!suggestedType) continue;
+
+        const timestamp = Math.round(parseFloat(msg.ts) * 1000) || Date.now();
 
         items.push({
           ref: msg.ts,
           from,
-          snippet: text.slice(0, 140),
+          snippet: summarize({ body: cleanedText }),
           suggestedType,
           suggestedInitials: initialsFrom(from),
+          urgency: scoreUrgency(cleanedText, from),
+          timestamp,
+          source: "slack",
         });
       }
     }

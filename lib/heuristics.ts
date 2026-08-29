@@ -1,23 +1,34 @@
 // lib/heuristics.ts
 //
 // Cheap, explainable, keyword-based "does this look like a sortable admin
-// task" detector. Deliberately NOT an LLM call: no message content should
-// have to leave the teacher's session and hit a third-party model API to
-// get flagged, and a transparent rule the teacher can see beats a black box
-// for something touching student-adjacent communication.
+// task" detector — plus local "who/what" summarising and urgency scoring
+// for the auto-detect feed. Deliberately NOT an LLM call anywhere in this
+// file: this app reads school email and Slack traffic (SEN/inclusion,
+// pastoral, safeguarding-adjacent, parent communication), and none of that
+// message content should have to leave the teacher's own session and hit a
+// third-party model API just to get summarised or triaged. A transparent
+// rule the teacher can see beats a black box for something touching
+// student-adjacent communication.
 //
-// Every function here takes only a subject/snippet + sender, never the
-// full message body — that's all the /api/gmail/scan and /api/slack/scan
-// routes fetch in the first place.
+// The "summary" shown in the auto-detect feed is built purely from data the
+// scan routes already fetch for classification (Gmail's own snippet field,
+// or the Slack message text) — reformatted and trimmed locally, never sent
+// anywhere but back to the teacher's own browser tab.
 
 import { TaskType } from "./db";
+
+export type Urgency = "urgent" | "soon" | "normal";
 
 export interface DetectedItem {
   ref: string; // gmail message id or slack ts
   from: string;
-  snippet: string;
+  subject?: string; // gmail only — used to build "Re:" reply drafts
+  snippet: string; // local "who — what" summary line, ready to display
   suggestedType: TaskType | null;
   suggestedInitials: string;
+  urgency: Urgency;
+  timestamp: number; // ms since epoch, for interleaving gmail + slack by recency
+  source: "gmail" | "slack";
 }
 
 const LEADERSHIP_HINTS = ["progress update", "data by", "can you send", "eop", "senior leader", "middle leader", "slt", "please confirm"];
@@ -41,6 +52,81 @@ export function classifySnippet(subjectOrText: string, from: string): TaskType |
   scores.sort((a, b) => b[1] - a[1]);
   const [topType, topScore] = scores[0];
   return topScore > 0 ? topType : null;
+}
+
+// Traffic-light urgency, same "cheap keyword rule, no model" philosophy as
+// classifySnippet above. Safeguarding/incident language is treated as
+// urgent regardless of category, since that's the one place a teacher
+// really can't afford this sitting unread in a merged feed.
+const URGENT_HINTS = [
+  "urgent",
+  "asap",
+  "as soon as possible",
+  "immediately",
+  "right away",
+  "emergency",
+  "safeguarding",
+  "before end of day",
+  "eod",
+  "need this today",
+  "this morning",
+];
+const SOON_HINTS = [
+  "tomorrow",
+  "this week",
+  "by friday",
+  "reminder",
+  "follow up",
+  "follow-up",
+  "when you get a chance",
+  "please confirm",
+  "by end of week",
+  "next few days",
+];
+
+export function scoreUrgency(text: string, from: string): Urgency {
+  const combined = `${text} ${from}`.toLowerCase();
+  if (URGENT_HINTS.some((hint) => combined.includes(hint))) return "urgent";
+  if (SOON_HINTS.some((hint) => combined.includes(hint))) return "soon";
+  return "normal";
+}
+
+// Strips Slack's mrkdwn syntax down to plain, readable text:
+// <@U123> mentions, <#C123|name> channel links, <url|label> / <url> links,
+// and *bold*/_italic_/`code` markers. Pure string cleanup, no network call.
+export function cleanSlackText(text: string): string {
+  return text
+    .replace(/<@[^>]+>/g, "@someone")
+    .replace(/<#[^|>]+\|([^>]+)>/g, "#$1")
+    .replace(/<([^|>]+)\|([^>]+)>/g, "$2")
+    .replace(/<([^>]+)>/g, "$1")
+    .replace(/[*_`~]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// "Firstname Lastname <email>" -> "Firstname Lastname"
+export function cleanSenderName(from: string): string {
+  const match = from.match(/^"?([^"<]+)"?\s*<[^>]+>$/);
+  return (match ? match[1] : from).trim();
+}
+
+// Builds the short "what this is" line shown next to the sender's name in
+// the feed, from whatever was already fetched for classification — Gmail's
+// own auto-generated snippet, or the Slack message text. No additional
+// summarisation call (local or remote) is made.
+export function summarize(params: { subject?: string; body: string }): string {
+  const { subject, body } = params;
+  const cleanedBody = body.replace(/\s+/g, " ").trim();
+  const cleanedSubject = subject?.replace(/\s+/g, " ").trim();
+  if (
+    cleanedSubject &&
+    cleanedBody &&
+    !cleanedBody.toLowerCase().startsWith(cleanedSubject.toLowerCase().slice(0, 12))
+  ) {
+    return `${cleanedSubject} — ${cleanedBody}`.slice(0, 180);
+  }
+  return (cleanedBody || cleanedSubject || "").slice(0, 180);
 }
 
 export function initialsFrom(nameOrEmail: string): string {
