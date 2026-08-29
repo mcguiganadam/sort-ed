@@ -52,7 +52,14 @@ function SlackProvider() {
     type: "oauth" as const,
     authorization: {
       url: "https://slack.com/oauth/v2/authorize",
-      params: { user_scope: SLACK_USER_SCOPES },
+      // NextAuth defaults `scope` to "openid" when it's left unset, which
+      // Slack's v2 authorize endpoint treats as a *bot* token scope. This
+      // app deliberately has no Bot Token Scopes configured (see README —
+      // SortEd only ever requests a user token), so an implicit "openid"
+      // bot scope makes Slack reject the whole request with "Invalid
+      // permissions requested". Setting scope to "" explicitly overrides
+      // NextAuth's default instead of merging with it.
+      params: { scope: "", user_scope: SLACK_USER_SCOPES },
     },
     token: "https://slack.com/api/oauth.v2.access",
     userinfo: "https://slack.com/api/users.identity",
