@@ -127,6 +127,26 @@ function truncateAtWord(text: string, maxChars: number): string {
   return `${trimmed.trimEnd()}…`;
 }
 
+// Google Calendar's own invite subjects are auto-generated and much noisier
+// than a normal email subject: "Invitation: PYP EAL coffee morning @ Thu 1
+// Oct 2026 08:50 - 09:50 (GMT+9) (Adam McGuigan)" packs the event title
+// together with a full date/time/timezone/organiser tail — info that's
+// already redundant with the card's own "1d ago" timestamp, and long enough
+// on its own to crowd out the part that actually says what the event is.
+// When a subject carries one of Calendar's own labels ("Invitation:",
+// "Updated Invitation:", "Cancelled Event:", "Declined:", "Accepted:",
+// "Tentative:") followed by " @ " and a date, keep just the
+// "<Label>: <title>" half — the when/where is one click away in Gmail if
+// it's needed, but isn't what a teacher scanning this feed is deciding on.
+const CALENDAR_LABEL_PATTERN = /^(updated\s+)?(invitation|cancelled event|canceled event|declined|accepted|tentative)\s*:/i;
+
+function stripCalendarInviteTail(subject: string): string {
+  const atIndex = subject.indexOf(" @ ");
+  if (atIndex === -1) return subject;
+  const prefix = subject.slice(0, atIndex).trim();
+  return CALENDAR_LABEL_PATTERN.test(prefix) ? prefix : subject;
+}
+
 // Builds the short "what this is" line shown next to the sender's name in
 // the feed, from whatever was already fetched for classification — Gmail's
 // own auto-generated snippet, or the Slack message text. No additional
@@ -137,13 +157,16 @@ function truncateAtWord(text: string, maxChars: number): string {
 // appending Gmail's snippet after it ("— Dear PYP teaching staff, As
 // mentioned at our Weds. meeting...") just made an already-informative
 // line longer without adding much. So when there's a subject, that's the
-// whole summary now. Slack messages have no subject, so those still fall
-// back to the message body — there'd be nothing to show otherwise.
+// whole summary now (after stripping a calendar invite's date/time tail,
+// see stripCalendarInviteTail above). Slack messages have no subject, so
+// those still fall back to the message body — there'd be nothing to show
+// otherwise.
 export function summarize(params: { subject?: string; body: string }): string {
   const { subject, body } = params;
   const cleanedBody = body.replace(/\s+/g, " ").trim();
   const cleanedSubject = subject?.replace(/\s+/g, " ").trim();
-  return truncateAtWord(cleanedSubject || cleanedBody, MAX_SUMMARY_CHARS);
+  const bestSubject = cleanedSubject ? stripCalendarInviteTail(cleanedSubject) : cleanedSubject;
+  return truncateAtWord(bestSubject || cleanedBody, MAX_SUMMARY_CHARS);
 }
 
 export function initialsFrom(nameOrEmail: string): string {
