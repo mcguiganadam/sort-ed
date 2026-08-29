@@ -70,7 +70,14 @@ export default function Home() {
         <KofiButton />
       </header>
 
-      <div className="mt-6 flex flex-wrap items-center gap-3 rounded-full bg-sorted-primary-soft/60 px-4 py-2 text-sm">
+      {/* rounded-full works as a single-line status pill on desktop, but at
+          phone width this row's content (sign-in buttons, or "Signed in
+          as..." + Sign out) wraps onto two lines — inside a stadium-radius
+          container that produces a lopsided blob with dead space in the
+          rounded corners rather than a clean shape. rounded-2xl reads fine
+          whether the content is one line or two; only sm: and up (where it
+          reliably fits on one line) restores the pill look. */}
+      <div className="mt-6 flex flex-wrap items-center gap-2 rounded-2xl bg-sorted-primary-soft/60 px-4 py-3 text-sm sm:gap-3 sm:rounded-full sm:py-2">
         {status === "authenticated" ? (
           <>
             <span className="text-sorted-ink-soft">Signed in as {session?.user?.email}</span>

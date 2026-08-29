@@ -129,49 +129,66 @@ export default function SortedList({
                         {TASK_TYPE_LABELS[task.taskType]}
                       </span>
                       <span className="min-w-0 flex-1 truncate text-sorted-ink">{task.initialCapture}</span>
+                      {/* -my-1 py-1 px-1.5: a bigger tap target for touch without
+                          growing the row's visible height or shifting the text's
+                          position — the negative margin gives back exactly what the
+                          padding added. */}
                       <button
                         onClick={() => handleEditToggle(task)}
-                        className="shrink-0 text-xs font-medium text-sorted-primary-dark hover:underline"
+                        className="-my-1 shrink-0 rounded px-1.5 py-1 text-xs font-medium text-sorted-primary-dark hover:underline"
                       >
                         {isEditing ? "Cancel" : "Edit"}
                       </button>
                       <button
                         onClick={() => handleDone(task)}
-                        className="shrink-0 text-xs font-medium text-sorted-primary hover:underline"
+                        className="-my-1 shrink-0 rounded px-1.5 py-1 text-xs font-medium text-sorted-primary hover:underline"
                       >
                         Done
                       </button>
                     </div>
 
                     {isEditing && (
-                      <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-sorted-border bg-white px-3 py-2">
-                        {TRIAGE_ORDER.map((u) => (
-                          <button
-                            key={u}
-                            type="button"
-                            onClick={() => setPendingUrgency(u)}
-                            className={`rounded-full px-2 py-0.5 text-xs font-medium transition ${URGENCY_STYLES[u].pill} ${
-                              pendingUrgency === u ? "ring-2 ring-offset-1 ring-sorted-ink/40" : "opacity-50 hover:opacity-100"
-                            }`}
-                          >
-                            {URGENCY_STYLES[u].label}
-                          </button>
-                        ))}
-                        <span className="ml-2 shrink-0 text-xs text-sorted-ink-soft">Category:</span>
-                        <select
-                          value={pendingCategory}
-                          onChange={(e) => setPendingCategory(e.target.value as TaskType)}
-                          className={`shrink-0 rounded-full border-none px-2 py-0.5 text-xs font-medium outline-none ${CATEGORY_STYLES[pendingCategory]}`}
-                        >
-                          {TASK_TYPES.map((t) => (
-                            <option key={t} value={t}>
-                              {TASK_TYPE_LABELS[t]}
-                            </option>
+                      // Mobile formatting pass: at phone width, the three urgency
+                      // buttons + "Category:" + the select + OK don't fit on one
+                      // line — flex-wrap alone just breaks them across lines
+                      // wherever they happen to run out of room, and OK's ml-auto
+                      // then strands it on its own line, flush right with a big gap
+                      // of empty space to its left. Below sm, this stacks into three
+                      // deliberate rows (urgency / category / OK) instead; at sm and
+                      // up there's room for the original single-line layout, so it
+                      // reverts to flex-row with ml-auto behaving as before.
+                      <div className="mt-2 flex flex-col gap-3 rounded-lg border border-sorted-border bg-white px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2 sm:py-2">
+                        <div className="flex gap-2">
+                          {TRIAGE_ORDER.map((u) => (
+                            <button
+                              key={u}
+                              type="button"
+                              onClick={() => setPendingUrgency(u)}
+                              className={`flex-1 rounded-full px-2 py-1.5 text-xs font-medium transition sm:flex-none sm:py-0.5 ${URGENCY_STYLES[u].pill} ${
+                                pendingUrgency === u ? "ring-2 ring-offset-1 ring-sorted-ink/40" : "opacity-50 hover:opacity-100"
+                              }`}
+                            >
+                              {URGENCY_STYLES[u].label}
+                            </button>
                           ))}
-                        </select>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="shrink-0 text-xs text-sorted-ink-soft">Category:</span>
+                          <select
+                            value={pendingCategory}
+                            onChange={(e) => setPendingCategory(e.target.value as TaskType)}
+                            className={`min-w-0 flex-1 rounded-full border-none px-2 py-1.5 text-xs font-medium outline-none sm:flex-none sm:py-0.5 ${CATEGORY_STYLES[pendingCategory]}`}
+                          >
+                            {TASK_TYPES.map((t) => (
+                              <option key={t} value={t}>
+                                {TASK_TYPE_LABELS[t]}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                         <button
                           onClick={() => handleApply(task)}
-                          className="ml-auto shrink-0 rounded-full bg-sorted-primary px-3 py-1 text-xs font-medium text-white transition hover:bg-sorted-primary-dark"
+                          className="w-full shrink-0 rounded-full bg-sorted-primary py-2 text-xs font-medium text-white transition hover:bg-sorted-primary-dark sm:ml-auto sm:w-auto sm:px-3 sm:py-1"
                         >
                           OK
                         </button>

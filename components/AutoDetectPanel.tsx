@@ -237,17 +237,20 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
                       </span>
                     )}
                   </div>
+                  {/* -my-1 py-1 px-1.5 -mx-1.5: bigger tap targets for touch,
+                      offset by negative margins so the row's spacing and height
+                      look exactly as before. */}
                   <div className="mt-2 flex items-center gap-3 text-xs">
                     <button
                       onClick={() => handleSort(item)}
                       disabled={!item.suggestedType}
-                      className="font-medium text-sorted-primary hover:underline disabled:cursor-not-allowed disabled:text-sorted-ink-soft/50 disabled:no-underline"
+                      className="-mx-1.5 -my-1 rounded px-1.5 py-1 font-medium text-sorted-primary hover:underline disabled:cursor-not-allowed disabled:text-sorted-ink-soft/50 disabled:no-underline"
                     >
                       Sort it
                     </button>
                     <button
                       onClick={() => handleIgnore(item)}
-                      className="font-medium text-sorted-ink-soft hover:text-sorted-ink hover:underline"
+                      className="-my-1 rounded px-1.5 py-1 font-medium text-sorted-ink-soft hover:text-sorted-ink hover:underline"
                     >
                       Ignore
                     </button>
