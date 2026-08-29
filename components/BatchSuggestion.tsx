@@ -84,13 +84,23 @@ export default function BatchSuggestion({ openTasks }: { openTasks: SortedTask[]
           Connect Google Calendar to find one
         </button>
       ) : (
-        <button
-          onClick={suggest}
-          disabled={loading || openTasks.length === 0}
-          className="mt-3 rounded-full bg-sorted-primary px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-primary-dark disabled:opacity-40"
-        >
-          {loading ? "Checking your calendar…" : "Find a clear moment"}
-        </button>
+        <>
+          <button
+            onClick={suggest}
+            disabled={loading || openTasks.length === 0}
+            className="mt-3 rounded-full bg-sorted-primary px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-primary-dark disabled:opacity-40"
+          >
+            {loading ? "Checking your calendar…" : "Find a clear moment"}
+          </button>
+          {/* The button above is disabled (not broken) whenever there's nothing
+              sorted yet — this finds time to clear tasks already in the list, so
+              with zero sorted it has nothing to search for. Without this line the
+              greyed-out button gave no clue why, which read as broken rather than
+              "sort something first." */}
+          {openTasks.length === 0 && (
+            <p className="mt-1 text-xs text-sorted-ink-soft/70">Sort a task first, then this can find a moment to clear it.</p>
+          )}
+        </>
       )}
 
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}

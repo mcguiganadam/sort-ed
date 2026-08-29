@@ -18,7 +18,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { sortTask, TaskType } from "@/lib/db";
-import { buildMailtoDraft } from "@/lib/mailto";
 import { TASK_TYPE_LABELS } from "@/lib/templates";
 import { Urgency } from "@/lib/heuristics";
 import { isLocalAIAvailable, loadLocalAI, summarizeWithLocalAI, unloadLocalAI } from "@/lib/localAI";
@@ -212,7 +211,7 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
     <div className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-sorted-primary-dark">
-          Auto-detect from Gmail &amp; Slack
+          Messages
         </h2>
         {anyConnected && (
           <button
@@ -341,18 +340,6 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
                     <button onClick={() => handleSort(item)} className="font-medium text-sorted-primary hover:underline">
                       Sort it
                     </button>
-                    {item.source === "gmail" && (
-                      <a
-                        className="font-medium text-sorted-amber hover:underline"
-                        href={buildMailtoDraft({
-                          subject: item.subject ?? item.snippet,
-                          suggestedType: item.suggestedType,
-                          senderName: item.from,
-                        })}
-                      >
-                        Draft reply
-                      </a>
-                    )}
                     <span className="ml-auto text-sorted-ink-soft/70">{timeAgo(item.timestamp)}</span>
                   </div>
                 </li>
