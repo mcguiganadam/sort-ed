@@ -2,38 +2,26 @@
 
 // components/SortedList.tsx
 //
-// The sorted list — grouped by red/orange/green (the order Adam listed
-// them in), not by category. Each task shows its category as a small
-// coloured pill styled the same as the auto-detect feed's own badges
-// (lib/templates.ts CATEGORY_STYLES) — same visual language as the
-// "mailbox" — but here it's a live dropdown, and the urgency dot next to
-// it is a live UrgencyPicker, not a static label. That's the fix for
-// "once sorted, it can't be relabelled or resorted": both the category and
-// the colour stay editable for as long as a task sits in this list, via
-// lib/db.ts updateTask(). "Done" is still the only way a task leaves —
-// deletes it outright — and nothing here has ever reset by day, so an
-// undeleted task carries over for as many days as it takes.
+// The sorted list, grouped into three boxes — Urgent / Next / Later — each
+// still coloured red/orange/green. Each task's own dropdown IS the sort:
+// picking a different option moves the task straight into that box. This
+// replaces two earlier attempts: a plain 3-dot colour picker (Adam: "The
+// circle buttons have not function and look terrible") and, before that,
+// a second dropdown that duplicated the category picker's look while doing
+// something completely different (Adam: "The drop down needs to be the
+// triaging: Urgent / Next / Later. This then sorts that task or message
+// into the Urgent, Next or Later box.").
+//
+// Category (Pastoral etc.) is shown next to it as a plain, non-editable
+// coloured pill — same visual language as the mailbox feed's own badges
+// (lib/templates.ts CATEGORY_STYLES) — rather than a second dropdown, per
+// Adam's own choice between the two when asked. lib/db.ts's updateTask
+// already supports changing taskType as well as urgency, so wiring a
+// category editor back in here later (a dropdown, an edit-in-place) is a
+// small change if that flexibility turns out to be wanted after all.
 import { SortedTask, TaskType, deleteTask, updateTask } from "@/lib/db";
 import { TASK_TYPE_LABELS, CATEGORY_STYLES } from "@/lib/templates";
 import { Urgency, URGENCY_ORDER, URGENCY_STYLES } from "@/lib/heuristics";
-import UrgencyPicker from "@/components/UrgencyPicker";
-
-const TASK_TYPES: TaskType[] = [
-  "pastoral",
-  "inclusion",
-  "parent",
-  "leadership",
-  "admin",
-  "planning",
-  "assessment",
-  "ideas",
-];
-
-const URGENCY_GROUP_LABEL: Record<Urgency, string> = {
-  urgent: "Red",
-  soon: "Orange",
-  normal: "Green",
-};
 
 export default function SortedList({
   tasks,
@@ -49,11 +37,6 @@ export default function SortedList({
 
   async function handleRecolour(task: SortedTask, urgency: Urgency) {
     await updateTask(task.id, { urgency });
-    onChanged();
-  }
-
-  async function handleRelabel(task: SortedTask, taskType: TaskType) {
-    await updateTask(task.id, { taskType });
     onChanged();
   }
 
@@ -76,35 +59,43 @@ export default function SortedList({
           <div key={urgency} className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
             <h3 className="flex items-center gap-2 font-display text-sm font-semibold text-sorted-primary-dark">
               <span className={`inline-block h-2.5 w-2.5 rounded-full ${style.dot}`} />
-              {URGENCY_GROUP_LABEL[urgency]} ({group.length})
+              {style.label} ({group.length})
             </h3>
             <ul className="mt-3 space-y-2">
-              {group.map((task) => (
-                <li
-                  key={task.id}
-                  className="flex flex-wrap items-center gap-2 rounded-lg bg-sorted-bg px-3 py-2 text-sm"
-                >
-                  <UrgencyPicker value={urgency} onChange={(u) => handleRecolour(task, u)} />
-                  <select
-                    value={task.taskType}
-                    onChange={(e) => handleRelabel(task, e.target.value as TaskType)}
-                    className={`shrink-0 rounded-full border-none px-2 py-0.5 text-xs font-medium outline-none ${CATEGORY_STYLES[task.taskType]}`}
+              {group.map((task) => {
+                const taskUrgency = task.urgency ?? "normal";
+                return (
+                  <li
+                    key={task.id}
+                    className="flex flex-wrap items-center gap-2 rounded-lg bg-sorted-bg px-3 py-2 text-sm"
                   >
-                    {TASK_TYPES.map((t) => (
-                      <option key={t} value={t}>
-                        {TASK_TYPE_LABELS[t]}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="min-w-0 flex-1 truncate text-sorted-ink">{task.initialCapture}</span>
-                  <button
-                    onClick={() => handleDone(task)}
-                    className="shrink-0 text-xs font-medium text-sorted-primary hover:underline"
-                  >
-                    Done
-                  </button>
-                </li>
-              ))}
+                    <select
+                      value={taskUrgency}
+                      onChange={(e) => handleRecolour(task, e.target.value as Urgency)}
+                      aria-label="Sort into"
+                      className={`shrink-0 rounded-full border-none px-2 py-0.5 text-xs font-medium outline-none ${URGENCY_STYLES[taskUrgency].pill}`}
+                    >
+                      {URGENCY_ORDER.map((u) => (
+                        <option key={u} value={u}>
+                          {URGENCY_STYLES[u].label}
+                        </option>
+                      ))}
+                    </select>
+                    <span
+                      className={`shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${CATEGORY_STYLES[task.taskType]}`}
+                    >
+                      {TASK_TYPE_LABELS[task.taskType]}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-sorted-ink">{task.initialCapture}</span>
+                    <button
+                      onClick={() => handleDone(task)}
+                      className="shrink-0 text-xs font-medium text-sorted-primary hover:underline"
+                    >
+                      Done
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         );

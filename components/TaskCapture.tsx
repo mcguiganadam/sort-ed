@@ -13,6 +13,7 @@ const TASK_TYPES: TaskType[] = [
   "planning",
   "assessment",
   "ideas",
+  "pd",
 ];
 
 export default function TaskCapture({ onSorted }: { onSorted: () => void }) {

@@ -19,6 +19,7 @@ const OPENERS: Record<TaskType, string> = {
   planning: "Here's where this is at:",
   ideas: "Following up on this:",
   assessment: "Sharing the update on this:",
+  pd: "Following up on this:",
 };
 
 export function buildMailtoDraft(params: {

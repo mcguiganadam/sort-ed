@@ -22,7 +22,8 @@ export type TaskType =
   | "admin"
   | "planning"
   | "assessment"
-  | "ideas";
+  | "ideas"
+  | "pd";
 
 export interface SortedTask {
   id: string;

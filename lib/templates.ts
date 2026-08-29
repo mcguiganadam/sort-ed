@@ -150,6 +150,24 @@ export const DEFAULT_TEMPLATES: Record<TaskType, TaskTemplate> = {
       },
     ],
   },
+  pd: {
+    id: "default-pd",
+    taskType: "pd",
+    templateName: "Professional development",
+    isDefault: true,
+    fields: [
+      {
+        key: "pdType",
+        label: "Type",
+        options: ["Course/workshop", "Reading", "Peer observation", "Reflection", "Other"],
+      },
+      {
+        key: "status",
+        label: "Status",
+        options: ["To do", "In progress", "Done"],
+      },
+    ],
+  },
 };
 
 export const TASK_TYPE_LABELS: Record<TaskType, string> = {
@@ -161,6 +179,7 @@ export const TASK_TYPE_LABELS: Record<TaskType, string> = {
   planning: "Planning",
   assessment: "Assessment",
   ideas: "Ideas",
+  pd: "PD",
 };
 
 // Same colour per category everywhere a label shows up — the auto-detect
@@ -175,4 +194,5 @@ export const CATEGORY_STYLES: Record<TaskType, string> = {
   planning: "bg-indigo-50 text-indigo-700",
   assessment: "bg-teal-50 text-teal-700",
   ideas: "bg-lime-50 text-lime-700",
+  pd: "bg-cyan-50 text-cyan-700",
 };
