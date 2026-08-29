@@ -3,6 +3,19 @@ module.exports = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    // lib/heuristics.ts builds Tailwind class strings (URGENCY_STYLES'
+    // bar/dot/pill/box) that components only ever reference dynamically
+    // (e.g. `${style.box}`) — Tailwind's JIT can't see through that
+    // interpolation, so it only generated CSS for a class if the exact
+    // same literal string happened to also appear somewhere already
+    // scanned. That's why the "Next"/orange box worked (KofiButton.tsx
+    // independently uses the identical "border-sorted-amber/30
+    // bg-sorted-amber-soft" string) while "Urgent" (red) and "Later"
+    // (green) rendered with no colour at all — their box classes had no
+    // such lucky duplicate anywhere in app/ or components/. Scanning
+    // lib/ too means every class defined there gets generated for real,
+    // regardless of what else happens to reference it.
+    "./lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
