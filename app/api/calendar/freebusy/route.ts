@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { getValidGoogleAccessToken, withRefreshedCookie } from "@/lib/googleToken";
 
 export const dynamic = "force-dynamic";
 
@@ -25,14 +26,28 @@ function nextWeekdayWindow(days: number) {
 
 export async function GET(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  const accessToken = token?.googleAccessToken as string | undefined;
-
-  if (!accessToken) {
+  if (!token) {
     return NextResponse.json(
       { error: "Not connected to Google. Sign in and grant Calendar read access first." },
       { status: 401 }
     );
   }
+
+  // See lib/googleToken.ts — access tokens expire roughly hourly and this
+  // route (like gmail/scan) reads the cookie directly via getToken(), which
+  // never runs NextAuth's own jwt() callback, so refreshing has to happen
+  // here rather than relying on lib/auth.ts.
+  const tokenResult = await getValidGoogleAccessToken(req, token);
+  if (!tokenResult.accessToken) {
+    const message =
+      tokenResult.error === "expired_no_refresh_token"
+        ? "Your Google connection expired and can't refresh automatically — disconnect and reconnect Google to fix this for good."
+        : tokenResult.error === "refresh_failed"
+        ? "Couldn't refresh your Google connection — try disconnecting and reconnecting Google."
+        : "Not connected to Google. Sign in and grant Calendar read access first.";
+    return NextResponse.json({ error: message }, { status: 401 });
+  }
+  const accessToken = tokenResult.accessToken;
 
   const { timeMin, timeMax } = nextWeekdayWindow(5);
 
@@ -50,12 +65,19 @@ export async function GET(req: NextRequest) {
       }),
     });
     if (!res.ok) {
-      return NextResponse.json({ error: "Calendar API error", status: res.status }, { status: 502 });
+      const detail = await res.json().catch(() => null);
+      const message = detail?.error?.message
+        ? `Calendar API error: ${detail.error.message}`
+        : `Calendar API error (status ${res.status})`;
+      return withRefreshedCookie(NextResponse.json({ error: message }, { status: 502 }), tokenResult);
     }
     const json = await res.json();
     const busy = json.calendars?.primary?.busy ?? [];
-    return NextResponse.json({ timeMin, timeMax, busy });
+    return withRefreshedCookie(NextResponse.json({ timeMin, timeMax, busy }), tokenResult);
   } catch (err) {
-    return NextResponse.json({ error: "Unexpected error reading calendar." }, { status: 500 });
+    return withRefreshedCookie(
+      NextResponse.json({ error: "Unexpected error reading calendar." }, { status: 500 }),
+      tokenResult
+    );
   }
 }

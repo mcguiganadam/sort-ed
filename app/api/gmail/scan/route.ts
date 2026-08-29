@@ -24,19 +24,34 @@ import {
   summarize,
   DetectedItem,
 } from "@/lib/heuristics";
+import { getValidGoogleAccessToken, withRefreshedCookie } from "@/lib/googleToken";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  const accessToken = token?.googleAccessToken as string | undefined;
-
-  if (!accessToken) {
+  if (!token) {
     return NextResponse.json(
       { error: "Not connected to Google. Sign in and grant Gmail read access first." },
       { status: 401 }
     );
   }
+
+  // Google access tokens expire roughly hourly — this transparently
+  // refreshes using the stored refresh token (see lib/googleToken.ts for
+  // why this can't just happen in the NextAuth jwt() callback) and hands
+  // back an updated cookie for the response to carry, if a refresh happened.
+  const tokenResult = await getValidGoogleAccessToken(req, token);
+  if (!tokenResult.accessToken) {
+    const message =
+      tokenResult.error === "expired_no_refresh_token"
+        ? "Your Google connection expired and can't refresh automatically — disconnect and reconnect Google to fix this for good."
+        : tokenResult.error === "refresh_failed"
+        ? "Couldn't refresh your Google connection — try disconnecting and reconnecting Google."
+        : "Not connected to Google. Sign in and grant Gmail read access first.";
+    return NextResponse.json({ error: message }, { status: 401 });
+  }
+  const accessToken = tokenResult.accessToken;
 
   try {
     const listRes = await fetch(
@@ -44,7 +59,16 @@ export async function GET(req: NextRequest) {
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
     if (!listRes.ok) {
-      return NextResponse.json({ error: "Gmail API error", status: listRes.status }, { status: 502 });
+      // Surface Google's actual error message (e.g. "Invalid Credentials",
+      // "Gmail API has not been used in project ... before or it is
+      // disabled") instead of a bare status code — this is exactly the
+      // kind of detail that made the original expired-token failure look
+      // like an opaque, unexplained "Gmail API error".
+      const detail = await listRes.json().catch(() => null);
+      const message = detail?.error?.message
+        ? `Gmail API error: ${detail.error.message}`
+        : `Gmail API error (status ${listRes.status})`;
+      return withRefreshedCookie(NextResponse.json({ error: message }, { status: 502 }), tokenResult);
     }
     const listJson = await listRes.json();
     const messageIds: string[] = (listJson.messages ?? []).map((m: any) => m.id);
@@ -84,8 +108,11 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ items });
+    return withRefreshedCookie(NextResponse.json({ items }), tokenResult);
   } catch (err) {
-    return NextResponse.json({ error: "Unexpected error scanning Gmail." }, { status: 500 });
+    return withRefreshedCookie(
+      NextResponse.json({ error: "Unexpected error scanning Gmail." }, { status: 500 }),
+      tokenResult
+    );
   }
 }
