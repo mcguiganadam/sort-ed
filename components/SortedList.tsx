@@ -128,7 +128,6 @@ export default function SortedList({
 
                     {isEditing && (
                       <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-sorted-border bg-white px-3 py-2">
-                        <span className="shrink-0 text-xs text-sorted-ink-soft">Sort into:</span>
                         {URGENCY_ORDER.map((u) => (
                           <button
                             key={u}
