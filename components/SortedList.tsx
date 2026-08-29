@@ -49,7 +49,15 @@ export default function SortedList({
   const [pendingUrgency, setPendingUrgency] = useState<Urgency>("normal");
   const [pendingCategory, setPendingCategory] = useState<TaskType>("pastoral");
 
+  // Done is the only way a task leaves the list, and it's a hard delete —
+  // no undo, nothing recoverable. Adam: "I am worried about people
+  // accidently hitting Done and the task disappearing." A confirm() here
+  // matches how app/page.tsx already guards "Delete everything" — same
+  // one-tap-away-from-permanent risk, same fix, rather than inventing a
+  // second pattern (an undo toast, a two-step button) for what's really
+  // the same problem.
   async function handleDone(task: SortedTask) {
+    if (!confirm(`Mark this done and remove it from the list?\n\n"${task.initialCapture}"`)) return;
     await deleteTask(task.id);
     onChanged();
   }
