@@ -245,7 +245,7 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
           </label>
           {aiStatus === "loading" && (
             <span className="text-sorted-ink-soft/70">
-              Downloading a small AI model to this browser (one-time, ~700MB)… {aiProgressText}
+              Downloading a small AI model to this browser (one-time, ~1GB)… {aiProgressText}
             </span>
           )}
           {aiStatus === "error" && aiError && <span className="text-red-600">{aiError}</span>}
@@ -296,7 +296,7 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
               return (
                 <li
                   key={key}
-                  className={`rounded-lg border-l-4 bg-sorted-bg px-3 py-2 text-sm ${urgencyStyle.bar}`}
+                  className={`overflow-hidden rounded-lg border-l-4 bg-sorted-bg px-3 py-2 text-sm ${urgencyStyle.bar}`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2">
@@ -304,18 +304,18 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
                         className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${urgencyStyle.dot}`}
                         title={urgencyStyle.label}
                       />
-                      <span className="whitespace-nowrap text-[10px] font-medium uppercase tracking-wide text-sorted-ink-soft">
+                      <span className="shrink-0 whitespace-nowrap text-[10px] font-medium uppercase tracking-wide text-sorted-ink-soft">
                         {SOURCE_LABEL[item.source]}
                       </span>
                       {aiSummary && (
                         <span
-                          className="whitespace-nowrap rounded-full bg-sorted-primary-soft px-1.5 py-0.5 text-[10px] font-medium text-sorted-primary-dark"
+                          className="shrink-0 whitespace-nowrap rounded-full bg-sorted-primary-soft px-1.5 py-0.5 text-[10px] font-medium text-sorted-primary-dark"
                           title="Summarised on-device"
                         >
                           AI
                         </span>
                       )}
-                      <span className="truncate text-sorted-ink">
+                      <span className="min-w-0 flex-1 truncate text-sorted-ink">
                         <strong>{item.from}</strong> — {isSummarizing ? "Summarising…" : displaySnippet}
                       </span>
                     </div>
