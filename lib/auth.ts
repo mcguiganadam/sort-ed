@@ -19,7 +19,40 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 import { NextAuthOptions } from "next-auth";
+import { decode } from "next-auth/jwt";
+import { cookies } from "next/headers";
 import GoogleProvider from "next-auth/providers/google";
+
+// ── WHY WE MANUALLY RE-READ THE OLD SESSION COOKIE ──────────────────────────
+// NextAuth rebuilds the JWT from scratch on every sign-in: the `token`
+// handed to the jwt() callback below starts as just
+// { name, email, picture, sub } from whichever provider you just used —
+// it does NOT carry forward whatever the previous session cookie had in it.
+// That's fine for a single provider, but SortEd lets a teacher connect
+// Google *and* Slack independently, and without a database there's nowhere
+// else to remember "I already had a Google token" once a fresh Slack
+// sign-in overwrites the cookie. So before layering on the new provider's
+// tokens, we read the still-valid *previous* session cookie straight off
+// the request (this route runs inside a normal Next.js request, so
+// next/headers' cookies() works here) and decode it with the same secret
+// NextAuth already uses, purely to carry its custom fields forward. No
+// extra storage, no database — just not throwing away what the cookie
+// already told us a moment ago.
+async function previousSessionToken(): Promise<Record<string, any> | null> {
+  try {
+    const store = cookies();
+    const raw =
+      store.get("__Secure-next-auth.session-token")?.value ??
+      store.get("next-auth.session-token")?.value;
+    if (!raw || !process.env.NEXTAUTH_SECRET) return null;
+    const decoded = await decode({ token: raw, secret: process.env.NEXTAUTH_SECRET });
+    return decoded ?? null;
+  } catch {
+    // Missing, expired, or undecodable cookie — just means there's no
+    // prior session to carry forward, not an error worth surfacing.
+    return null;
+  }
+}
 
 // Minimal, read-only scopes only. No gmail.send, no gmail.compose, no
 // calendar.events (write). Drafting replies happens client-side via a
@@ -116,6 +149,18 @@ export const authOptions: NextAuthOptions = {
     // return value is what gets encrypted into the session cookie.
     async jwt({ token, account }) {
       if (account) {
+        // Carry forward whatever the OTHER provider already had connected
+        // — see previousSessionToken() above for why this is necessary.
+        // Each field is only pulled forward if this fresh token doesn't
+        // already have it, so a re-connect of the same provider below
+        // still wins with its own new tokens.
+        const previous = await previousSessionToken();
+        if (previous) {
+          token.googleAccessToken ??= previous.googleAccessToken;
+          token.googleRefreshToken ??= previous.googleRefreshToken;
+          token.googleExpiresAt ??= previous.googleExpiresAt;
+          token.slackUserToken ??= previous.slackUserToken;
+        }
         if (account.provider === "google") {
           token.googleAccessToken = account.access_token;
           token.googleRefreshToken = account.refresh_token;
