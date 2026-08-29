@@ -2,9 +2,14 @@
 
 // components/SortedList.tsx
 //
-// The sorted list, grouped into three boxes — Urgent / Next / Later — each
-// box itself coloured red/orange/green (Adam: "Boxes need to be the
-// colour of their label" — lib/heuristics.ts URGENCY_STYLES.box).
+// The sorted list, grouped into four boxes — Unsorted, then Urgent / Next
+// / Later — the three triage boxes each coloured red/orange/green (Adam:
+// "Boxes need to be the colour of their label" — lib/heuristics.ts
+// URGENCY_STYLES.box). Unsorted is where every new task lands (quick
+// capture, or sorting straight from the mailbox feed — see lib/db.ts
+// sortTask's default) until a teacher actually triages it via Edit below;
+// it gets a plain, neutral box rather than a fourth traffic-light colour,
+// since it isn't a triage level, just the absence of one yet.
 //
 // Changing a task's urgency used to be a live dropdown sitting right on
 // the row, styled as a colour-coded pill. Adam: "Instead of the drop
@@ -24,7 +29,7 @@
 import { useState } from "react";
 import { SortedTask, TaskType, deleteTask, updateTask } from "@/lib/db";
 import { TASK_TYPE_LABELS, CATEGORY_STYLES } from "@/lib/templates";
-import { Urgency, URGENCY_ORDER, URGENCY_STYLES } from "@/lib/heuristics";
+import { Urgency, URGENCY_ORDER, TRIAGE_ORDER, URGENCY_STYLES } from "@/lib/heuristics";
 
 const TASK_TYPES: TaskType[] = [
   "pastoral",
@@ -68,7 +73,11 @@ export default function SortedList({
       return;
     }
     setEditingId(task.id);
-    setPendingUrgency(task.urgency ?? "normal");
+    // The picker only offers the three real triage levels (TRIAGE_ORDER),
+    // so an "unsorted" (or missing, pre-this-field) task starts the
+    // picker on "Later" rather than on a level it can't actually show as
+    // selected.
+    setPendingUrgency(task.urgency && task.urgency !== "unsorted" ? task.urgency : "normal");
     setPendingCategory(task.taskType);
   }
 
@@ -89,7 +98,7 @@ export default function SortedList({
   return (
     <div className="space-y-4">
       {URGENCY_ORDER.map((urgency) => {
-        const group = tasks.filter((t) => (t.urgency ?? "normal") === urgency);
+        const group = tasks.filter((t) => (t.urgency ?? "unsorted") === urgency);
         if (group.length === 0) return null;
         const style = URGENCY_STYLES[urgency];
 
@@ -136,7 +145,7 @@ export default function SortedList({
 
                     {isEditing && (
                       <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-sorted-border bg-white px-3 py-2">
-                        {URGENCY_ORDER.map((u) => (
+                        {TRIAGE_ORDER.map((u) => (
                           <button
                             key={u}
                             type="button"

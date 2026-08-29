@@ -17,7 +17,12 @@
 
 import { TaskType } from "./db";
 
-export type Urgency = "urgent" | "soon" | "normal";
+// "unsorted" is where every new task lands — quick capture, and anything
+// sorted straight from the mailbox feed — until a teacher actually triages
+// it (Adam: "An Unsorted box is needed for QUICK CAPTURE tasks to first
+// land into"). It's not one of the three real destinations a task gets
+// sorted into, just the waiting room before that decision is made.
+export type Urgency = "unsorted" | "urgent" | "soon" | "normal";
 
 // Shared triage language, used only in the sorted list now (see
 // components/SortedList.tsx) — the auto-detect feed and quick capture no
@@ -27,8 +32,17 @@ export type Urgency = "urgent" | "soon" | "normal";
 // each still carrying its own red/orange/green colour: `dot` for the small
 // heading marker, `pill` for a task's own colour-coded badge, and `box`
 // for the section card itself (Adam: "Boxes need to be the colour of
-// their label").
+// their label"). "unsorted" gets a neutral grey/plain treatment rather
+// than a fourth traffic-light colour — it isn't a triage level, it's the
+// absence of one yet.
 export const URGENCY_STYLES: Record<Urgency, { bar: string; dot: string; pill: string; box: string; label: string }> = {
+  unsorted: {
+    bar: "border-slate-300",
+    dot: "bg-slate-400",
+    pill: "bg-slate-100 text-slate-600",
+    box: "border-sorted-border bg-sorted-card",
+    label: "Unsorted",
+  },
   urgent: {
     bar: "border-red-500",
     dot: "bg-red-500",
@@ -52,7 +66,15 @@ export const URGENCY_STYLES: Record<Urgency, { bar: string; dot: string; pill: s
   },
 };
 
-export const URGENCY_ORDER: Urgency[] = ["urgent", "soon", "normal"];
+// Display order for the sorted list's section boxes — Unsorted first
+// (that's where things land), then the three triage levels.
+export const URGENCY_ORDER: Urgency[] = ["unsorted", "urgent", "soon", "normal"];
+
+// The three real destinations a task can be triaged into, for the Edit
+// panel's picker — deliberately excludes "unsorted", since that's a
+// starting state a task lands in, not a level you'd choose to sort back
+// into once you've started triaging.
+export const TRIAGE_ORDER: Urgency[] = ["urgent", "soon", "normal"];
 
 export interface DetectedItem {
   ref: string; // gmail message id or slack ts
