@@ -30,7 +30,18 @@ export async function GET(req: NextRequest) {
     );
     const channelsJson = await channelsRes.json();
     if (!channelsJson.ok) {
-      return NextResponse.json({ error: `Slack API error: ${channelsJson.error}` }, { status: 502 });
+      // Slack's error payload for scope problems includes `needed` (the
+      // scope that was missing) and `provided` (what the token actually
+      // has) — surfacing those makes a missing_scope error actionable
+      // instead of just a name, both for us during setup and for anyone
+      // who has to debug this again later.
+      const detail = channelsJson.needed
+        ? ` (needed: ${channelsJson.needed}; provided: ${channelsJson.provided ?? "none"})`
+        : "";
+      return NextResponse.json(
+        { error: `Slack API error: ${channelsJson.error}${detail}` },
+        { status: 502 }
+      );
     }
 
     const oneDayAgo = (Date.now() / 1000 - 60 * 60 * 24).toFixed(6);
