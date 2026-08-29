@@ -17,9 +17,9 @@
 // itself is left in place unused rather than deleted, in case on-device
 // summarisation is worth revisiting later with a different approach.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { sortTask, TaskType } from "@/lib/db";
+import { sortTask, ignoreItem, listIgnoredRefs, TaskType } from "@/lib/db";
 import { TASK_TYPE_LABELS } from "@/lib/templates";
 import { Urgency } from "@/lib/heuristics";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
@@ -82,6 +82,13 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [ignoredRefs, setIgnoredRefs] = useState<Set<string>>(new Set());
+
+  // Loaded once on mount so a message ignored in a previous visit stays
+  // hidden from the very first scan, not just after this tab ignores it.
+  useEffect(() => {
+    listIgnoredRefs().then(setIgnoredRefs);
+  }, []);
 
   async function scan() {
     setLoading(true);
@@ -128,7 +135,18 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
     onSorted();
   }
 
-  const visibleItems = items?.filter((i) => !dismissed.has(itemKey(i))) ?? [];
+  // Not every scanned item is worth sorting — a newsletter, a recruiter
+  // email, anything that will never become a task. Ignoring one removes it
+  // from the feed permanently (see lib/db.ts) rather than just for this
+  // visit, since re-seeing the same non-task every scan is exactly the kind
+  // of noise this feed is meant to cut down on.
+  async function handleIgnore(item: DetectedItem) {
+    const key = itemKey(item);
+    await ignoreItem(key);
+    setIgnoredRefs((prev) => new Set(prev).add(key));
+  }
+
+  const visibleItems = items?.filter((i) => !dismissed.has(itemKey(i)) && !ignoredRefs.has(itemKey(i))) ?? [];
   const anyConnected = googleConnected || slackConnected;
 
   return (
@@ -230,6 +248,12 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
                   <div className="mt-2 flex items-center gap-3 text-xs">
                     <button onClick={() => handleSort(item)} className="font-medium text-sorted-primary hover:underline">
                       Sort it
+                    </button>
+                    <button
+                      onClick={() => handleIgnore(item)}
+                      className="font-medium text-sorted-ink-soft hover:text-sorted-ink hover:underline"
+                    >
+                      Ignore
                     </button>
                     <span className="ml-auto text-sorted-ink-soft/70">{timeAgo(item.timestamp)}</span>
                   </div>
