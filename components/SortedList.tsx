@@ -2,22 +2,38 @@
 
 // components/SortedList.tsx
 //
-// The sorted list itself — grouped by the same category labels used
-// everywhere else in the app, each task shown with the red/orange/green
-// the teacher picked at sort time (lib/heuristics.ts URGENCY_STYLES).
-//
-// This used to expand into a per-category template form ("Log now" —
-// Support type, Status, etc.) before a task could be marked done, which
-// was its own small pile of decisions on top of sorting and colour-coding.
-// Per Adam's "too much decision making" feedback, that's gone: a task sits
-// here, coloured and labelled, until the teacher taps "Done" — which
-// simply removes it. Nothing here resets by day either: listOpenTasks()
-// has no date filter, so a sorted task carries over for as many days as it
-// takes until it's deleted, which was already true and is now the only
-// way a task leaves this list.
-import { SortedTask, deleteTask } from "@/lib/db";
-import { TASK_TYPE_LABELS } from "@/lib/templates";
-import { URGENCY_STYLES } from "@/lib/heuristics";
+// The sorted list — grouped by red/orange/green (the order Adam listed
+// them in), not by category. Each task shows its category as a small
+// coloured pill styled the same as the auto-detect feed's own badges
+// (lib/templates.ts CATEGORY_STYLES) — same visual language as the
+// "mailbox" — but here it's a live dropdown, and the urgency dot next to
+// it is a live UrgencyPicker, not a static label. That's the fix for
+// "once sorted, it can't be relabelled or resorted": both the category and
+// the colour stay editable for as long as a task sits in this list, via
+// lib/db.ts updateTask(). "Done" is still the only way a task leaves —
+// deletes it outright — and nothing here has ever reset by day, so an
+// undeleted task carries over for as many days as it takes.
+import { SortedTask, TaskType, deleteTask, updateTask } from "@/lib/db";
+import { TASK_TYPE_LABELS, CATEGORY_STYLES } from "@/lib/templates";
+import { Urgency, URGENCY_ORDER, URGENCY_STYLES } from "@/lib/heuristics";
+import UrgencyPicker from "@/components/UrgencyPicker";
+
+const TASK_TYPES: TaskType[] = [
+  "pastoral",
+  "inclusion",
+  "parent",
+  "leadership",
+  "admin",
+  "planning",
+  "assessment",
+  "ideas",
+];
+
+const URGENCY_GROUP_LABEL: Record<Urgency, string> = {
+  urgent: "Red",
+  soon: "Orange",
+  normal: "Green",
+};
 
 export default function SortedList({
   tasks,
@@ -26,13 +42,18 @@ export default function SortedList({
   tasks: SortedTask[];
   onChanged: () => void;
 }) {
-  const grouped = tasks.reduce<Record<string, SortedTask[]>>((acc, t) => {
-    (acc[t.taskType] ??= []).push(t);
-    return acc;
-  }, {});
-
   async function handleDone(task: SortedTask) {
     await deleteTask(task.id);
+    onChanged();
+  }
+
+  async function handleRecolour(task: SortedTask, urgency: Urgency) {
+    await updateTask(task.id, { urgency });
+    onChanged();
+  }
+
+  async function handleRelabel(task: SortedTask, taskType: TaskType) {
+    await updateTask(task.id, { taskType });
     onChanged();
   }
 
@@ -46,28 +67,36 @@ export default function SortedList({
 
   return (
     <div className="space-y-4">
-      {Object.entries(grouped).map(([type, group]) => (
-        <div key={type} className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
-          <h3 className="font-display text-sm font-semibold text-sorted-primary-dark">
-            {TASK_TYPE_LABELS[type as keyof typeof TASK_TYPE_LABELS]} ({group.length})
-          </h3>
-          <ul className="mt-3 space-y-2">
-            {group.map((task) => {
-              // Tasks sorted before urgency existed have none stored — treat
-              // as green/routine rather than crashing on a missing style.
-              const urgencyStyle = URGENCY_STYLES[task.urgency ?? "normal"];
-              return (
+      {URGENCY_ORDER.map((urgency) => {
+        const group = tasks.filter((t) => (t.urgency ?? "normal") === urgency);
+        if (group.length === 0) return null;
+        const style = URGENCY_STYLES[urgency];
+
+        return (
+          <div key={urgency} className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
+            <h3 className="flex items-center gap-2 font-display text-sm font-semibold text-sorted-primary-dark">
+              <span className={`inline-block h-2.5 w-2.5 rounded-full ${style.dot}`} />
+              {URGENCY_GROUP_LABEL[urgency]} ({group.length})
+            </h3>
+            <ul className="mt-3 space-y-2">
+              {group.map((task) => (
                 <li
                   key={task.id}
-                  className={`flex items-center justify-between gap-2 rounded-lg border-l-4 bg-sorted-bg px-3 py-2 ${urgencyStyle.bar}`}
+                  className="flex flex-wrap items-center gap-2 rounded-lg bg-sorted-bg px-3 py-2 text-sm"
                 >
-                  <span className="flex min-w-0 items-center gap-2 text-sm text-sorted-ink">
-                    <span
-                      className={`inline-block h-2 w-2 shrink-0 rounded-full ${urgencyStyle.dot}`}
-                      title={urgencyStyle.label}
-                    />
-                    <span className="truncate">{task.initialCapture}</span>
-                  </span>
+                  <UrgencyPicker value={urgency} onChange={(u) => handleRecolour(task, u)} />
+                  <select
+                    value={task.taskType}
+                    onChange={(e) => handleRelabel(task, e.target.value as TaskType)}
+                    className={`shrink-0 rounded-full border-none px-2 py-0.5 text-xs font-medium outline-none ${CATEGORY_STYLES[task.taskType]}`}
+                  >
+                    {TASK_TYPES.map((t) => (
+                      <option key={t} value={t}>
+                        {TASK_TYPE_LABELS[t]}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="min-w-0 flex-1 truncate text-sorted-ink">{task.initialCapture}</span>
                   <button
                     onClick={() => handleDone(task)}
                     className="shrink-0 text-xs font-medium text-sorted-primary hover:underline"
@@ -75,11 +104,11 @@ export default function SortedList({
                     Done
                   </button>
                 </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+              ))}
+            </ul>
+          </div>
+        );
+      })}
     </div>
   );
 }

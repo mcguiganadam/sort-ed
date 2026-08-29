@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { sortTask, TaskType } from "@/lib/db";
 import { TASK_TYPE_LABELS } from "@/lib/templates";
-import { Urgency } from "@/lib/heuristics";
-import UrgencyPicker from "@/components/UrgencyPicker";
 
 const TASK_TYPES: TaskType[] = [
   "pastoral",
@@ -19,14 +17,17 @@ const TASK_TYPES: TaskType[] = [
 
 export default function TaskCapture({ onSorted }: { onSorted: () => void }) {
   const [taskType, setTaskType] = useState<TaskType>("pastoral");
-  const [urgency, setUrgency] = useState<Urgency>("normal");
   const [note, setNote] = useState("");
   const [justSorted, setJustSorted] = useState(false);
 
+  // Red/orange/green isn't asked here any more — it's picked (and freely
+  // changeable) in the sorted list itself, see components/SortedList.tsx.
+  // Every task starts green/routine (lib/db.ts sortTask default) until the
+  // teacher decides otherwise.
   async function handleSort(e: React.FormEvent) {
     e.preventDefault();
     if (!note.trim()) return;
-    await sortTask({ taskType, urgency, initialCapture: note.trim(), source: "manual" });
+    await sortTask({ taskType, initialCapture: note.trim(), source: "manual" });
     setNote("");
     setJustSorted(true);
     onSorted();
@@ -53,10 +54,6 @@ export default function TaskCapture({ onSorted }: { onSorted: () => void }) {
             {TASK_TYPE_LABELS[t]}
           </button>
         ))}
-      </div>
-      <div className="mt-3 flex items-center gap-2">
-        <span className="text-xs font-medium text-sorted-ink-soft">Time-sensitivity:</span>
-        <UrgencyPicker value={urgency} onChange={setUrgency} />
       </div>
       <input
         value={note}

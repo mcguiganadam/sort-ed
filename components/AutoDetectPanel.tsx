@@ -5,12 +5,14 @@
 // Single merged feed of recent Gmail + Slack activity that looks sortable,
 // interleaved by recency. Each item is summarised and, where a keyword rule
 // recognises it, labelled with one of the same categories quick capture
-// uses (lib/heuristics.ts classifySnippet) — but deliberately NOT
-// colour-coded automatically any more. This used to also auto-compute and
-// display an urgency colour per item; per Adam's "too much decision
-// making" feedback, that decision now belongs to the teacher, made once
-// with UrgencyPicker at the moment of sorting (same control quick capture
-// uses), not guessed and displayed passively before they've even looked.
+// uses (lib/heuristics.ts classifySnippet) — but deliberately not
+// colour-coded here. Red/orange/green isn't decided at scan time at all
+// any more (an earlier version of this asked for it right here, which
+// Adam flagged as one more decision competing for attention on top of
+// deciding whether to sort in the first place) — every newly-sorted task
+// starts green/routine and gets its colour, or a different category, from
+// the sorted list itself (components/SortedList.tsx), which — unlike this
+// one-shot "Sort it" — stays editable for as long as the task sits there.
 //
 // This used to also offer an opt-in on-device AI summariser
 // (lib/localAI.ts, WebGPU/WebLLM) — removed on Adam's call after it kept
@@ -22,10 +24,9 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { sortTask, ignoreItem, listIgnoredRefs, TaskType } from "@/lib/db";
-import { TASK_TYPE_LABELS } from "@/lib/templates";
+import { sortTask, ignoreItem, listIgnoredRefs, listSortedRefs, TaskType } from "@/lib/db";
+import { TASK_TYPE_LABELS, CATEGORY_STYLES } from "@/lib/templates";
 import { Urgency } from "@/lib/heuristics";
-import UrgencyPicker from "@/components/UrgencyPicker";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import SlackSignInButton from "@/components/SlackSignInButton";
 
@@ -41,17 +42,6 @@ interface DetectedItem {
   timestamp: number;
   source: "gmail" | "slack";
 }
-
-const CATEGORY_STYLES: Record<TaskType, string> = {
-  pastoral: "bg-rose-50 text-rose-700",
-  inclusion: "bg-purple-50 text-purple-700",
-  parent: "bg-sky-50 text-sky-700",
-  leadership: "bg-amber-50 text-amber-700",
-  admin: "bg-slate-100 text-slate-700",
-  planning: "bg-indigo-50 text-indigo-700",
-  assessment: "bg-teal-50 text-teal-700",
-  ideas: "bg-lime-50 text-lime-700",
-};
 
 const SOURCE_LABEL: Record<DetectedItem["source"], string> = {
   gmail: "Gmail",
@@ -79,18 +69,20 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
   const [items, setItems] = useState<DetectedItem[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [ignoredRefs, setIgnoredRefs] = useState<Set<string>>(new Set());
-  // Per-item urgency the teacher has explicitly picked in UrgencyPicker,
-  // keyed by itemKey. Falls back to the server's keyword-guessed
-  // item.urgency as a starting point until touched — a default the teacher
-  // can see and change, not a decision made silently on their behalf.
-  const [urgencyChoice, setUrgencyChoice] = useState<Record<string, Urgency>>({});
+  // Refs already turned into a sorted task — persisted (lib/db.ts
+  // sortTask writes to the "sortedRefs" store automatically), so a message
+  // that's already been sorted doesn't come back the next time this scans,
+  // or after a page reload. Ignoring and sorting both permanently remove
+  // an item from this feed; they're just two different reasons why.
+  const [sortedRefs, setSortedRefs] = useState<Set<string>>(new Set());
 
-  // Loaded once on mount so a message ignored in a previous visit stays
-  // hidden from the very first scan, not just after this tab ignores it.
+  // Loaded once on mount so anything already ignored or sorted in a
+  // previous visit stays hidden from the very first scan, not just after
+  // this tab acts on it.
   useEffect(() => {
     listIgnoredRefs().then(setIgnoredRefs);
+    listSortedRefs().then(setSortedRefs);
   }, []);
 
   async function scan() {
@@ -130,12 +122,15 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
     if (!item.suggestedType) return;
     await sortTask({
       taskType: item.suggestedType,
-      urgency: urgencyChoice[itemKey(item)] ?? item.urgency,
-      initialCapture: `${item.suggestedInitials} — via ${SOURCE_LABEL[item.source]}`,
+      // The same "who — what" line shown right here in the feed, not
+      // reduced to initials — the whole point of summarising it first was
+      // so that context didn't have to be re-typed or thrown away at
+      // sort time.
+      initialCapture: `${item.from} — ${item.snippet}`,
       source: item.source === "gmail" ? "gmail" : "slack",
       sourceRef: item.ref,
     });
-    setDismissed((prev) => new Set(prev).add(itemKey(item)));
+    setSortedRefs((prev) => new Set(prev).add(itemKey(item)));
     onSorted();
   }
 
@@ -150,7 +145,7 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
     setIgnoredRefs((prev) => new Set(prev).add(key));
   }
 
-  const visibleItems = items?.filter((i) => !dismissed.has(itemKey(i)) && !ignoredRefs.has(itemKey(i))) ?? [];
+  const visibleItems = items?.filter((i) => !sortedRefs.has(itemKey(i)) && !ignoredRefs.has(itemKey(i))) ?? [];
   const anyConnected = googleConnected || slackConnected;
 
   return (
@@ -211,7 +206,6 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
           <ul className="mt-3 space-y-2">
             {visibleItems.map((item) => {
               const key = itemKey(item);
-              const chosenUrgency = urgencyChoice[key] ?? item.urgency;
 
               return (
                 <li key={key} className="overflow-hidden rounded-lg bg-sorted-bg px-3 py-2 text-sm">
@@ -243,10 +237,6 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
                     )}
                   </div>
                   <div className="mt-2 flex items-center gap-3 text-xs">
-                    <UrgencyPicker
-                      value={chosenUrgency}
-                      onChange={(u) => setUrgencyChoice((prev) => ({ ...prev, [key]: u }))}
-                    />
                     <button
                       onClick={() => handleSort(item)}
                       disabled={!item.suggestedType}

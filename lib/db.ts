@@ -61,6 +61,18 @@ export interface IgnoredItem {
   ignoredAt: string;
 }
 
+// Every "source:id" ref that has ever become a sorted task — written
+// automatically by sortTask below whenever a task's source/sourceRef point
+// back to a scanned message. Separate from `ignored` (a message the
+// teacher explicitly chose to hide without acting on it) even though both
+// exist for the same reason from the feed's point of view: once a message
+// has been dealt with, one way or the other, it shouldn't come back on the
+// next scan just because the sorted task it became was later deleted.
+export interface SortedRef {
+  ref: string;
+  sortedAt: string;
+}
+
 interface SortedDB extends DBSchema {
   tasks: {
     key: string;
@@ -75,10 +87,14 @@ interface SortedDB extends DBSchema {
     key: string;
     value: IgnoredItem;
   };
+  sortedRefs: {
+    key: string;
+    value: SortedRef;
+  };
 }
 
 const DB_NAME = "sorted";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 let dbPromise: Promise<IDBPDatabase<SortedDB>> | null = null;
 
@@ -97,6 +113,9 @@ function getDB() {
         }
         if (oldVersion < 2) {
           db.createObjectStore("ignored", { keyPath: "ref" });
+        }
+        if (oldVersion < 3) {
+          db.createObjectStore("sortedRefs", { keyPath: "ref" });
         }
       },
     });
@@ -127,6 +146,16 @@ export async function sortTask(input: {
     createdAt: new Date().toISOString(),
   };
   await db.put("tasks", task);
+  // Record that this scanned message has been sorted, so AutoDetectPanel
+  // can permanently exclude it from future scans — even if this task is
+  // later deleted from the sorted list, the original email shouldn't
+  // resurface in the feed as if it had never been dealt with.
+  if ((input.source === "gmail" || input.source === "slack") && input.sourceRef) {
+    await db.put("sortedRefs", {
+      ref: `${input.source}:${input.sourceRef}`,
+      sortedAt: task.createdAt,
+    });
+  }
   return task;
 }
 
@@ -158,6 +187,20 @@ export async function deleteTask(id: string): Promise<void> {
   await db.delete("tasks", id);
 }
 
+// Relabels and/or recolours an already-sorted task in place. Sorting isn't
+// a one-shot decision — a task can sit in the list for days, and what
+// looked like "green" or "Pastoral" on day one might not still be right.
+// Used by the sorted list's own inline category/urgency pickers.
+export async function updateTask(
+  id: string,
+  updates: Partial<Pick<SortedTask, "taskType" | "urgency">>
+): Promise<void> {
+  const db = await getDB();
+  const task = await db.get("tasks", id);
+  if (!task) return;
+  await db.put("tasks", { ...task, ...updates });
+}
+
 // Marks one auto-detected message as ignored, keyed by the same
 // "source:id" ref AutoDetectPanel builds for every item — so it's gone from
 // the feed now and stays gone on every future scan, without SortEd ever
@@ -173,11 +216,18 @@ export async function listIgnoredRefs(): Promise<Set<string>> {
   return new Set(all.map((i) => i.ref));
 }
 
+export async function listSortedRefs(): Promise<Set<string>> {
+  const db = await getDB();
+  const all = await db.getAll("sortedRefs");
+  return new Set(all.map((r) => r.ref));
+}
+
 export async function clearAllData(): Promise<void> {
   const db = await getDB();
   await db.clear("tasks");
   await db.clear("templates");
   await db.clear("ignored");
+  await db.clear("sortedRefs");
 }
 
 export async function exportAllData(): Promise<string> {
@@ -185,5 +235,10 @@ export async function exportAllData(): Promise<string> {
   const db = await getDB();
   const templates = await db.getAll("templates");
   const ignored = await db.getAll("ignored");
-  return JSON.stringify({ exportedAt: new Date().toISOString(), tasks, templates, ignored }, null, 2);
+  const sortedRefs = await db.getAll("sortedRefs");
+  return JSON.stringify(
+    { exportedAt: new Date().toISOString(), tasks, templates, ignored, sortedRefs },
+    null,
+    2
+  );
 }

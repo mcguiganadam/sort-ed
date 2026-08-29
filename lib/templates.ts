@@ -162,3 +162,17 @@ export const TASK_TYPE_LABELS: Record<TaskType, string> = {
   assessment: "Assessment",
   ideas: "Ideas",
 };
+
+// Same colour per category everywhere a label shows up — the auto-detect
+// feed's badges and, now, the sorted list's own editable category picker,
+// so a "Pastoral" pill looks like the same thing in both places.
+export const CATEGORY_STYLES: Record<TaskType, string> = {
+  pastoral: "bg-rose-50 text-rose-700",
+  inclusion: "bg-purple-50 text-purple-700",
+  parent: "bg-sky-50 text-sky-700",
+  leadership: "bg-amber-50 text-amber-700",
+  admin: "bg-slate-100 text-slate-700",
+  planning: "bg-indigo-50 text-indigo-700",
+  assessment: "bg-teal-50 text-teal-700",
+  ideas: "bg-lime-50 text-lime-700",
+};
