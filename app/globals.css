@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Defensive against any single element (present or future) ever forcing
+   the page wider than the viewport and quietly throwing off the centered
+   `mx-auto max-w-4xl` layout in app/page.tsx — reported live as a large,
+   consistent left/right margin imbalance that reproduced in Safari Private
+   Browsing (ruling out an extension) with a "None" custom style sheet
+   (ruling out that too) and that a from-scratch code review of every
+   component found no cause for. Rather than leave the page's centering
+   dependent on nothing on the page ever accidentally overflowing — which
+   isn't a guarantee this codebase actually makes anywhere — pin html/body
+   to the viewport width so nothing can ever push them wider, regardless of
+   what ends up being responsible. The app has no legitimate need for
+   horizontal scroll or overflow, so this has no functional downside. */
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   background-color: #faf7f2;
   color: #1f2a24;
