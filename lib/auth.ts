@@ -70,12 +70,23 @@ const GOOGLE_SCOPES = [
 // cleanly once you need read scopes beyond identity, so it's configured
 // here as a generic OAuth2 provider hitting Slack's v2 endpoints directly,
 // requesting a *user token* (not a bot token) scoped to read-only history.
+//
+// Both a "*:history" (read messages) and a "*:read" (list/discover the
+// conversation in the first place) scope are needed per conversation
+// type. conversations.list — which the Slack scan calls first, before it
+// can read anything — asks for public_channel, private_channel, mpim and
+// im types; without the *:read counterpart for each, Slack returns
+// "missing_scope" even though the matching *:history scope is present.
+// channels:read covers public_channel; groups/im/mpim:read cover the rest.
 const SLACK_USER_SCOPES = [
   "channels:history",
   "channels:read",
   "groups:history",
+  "groups:read",
   "im:history",
+  "im:read",
   "mpim:history",
+  "mpim:read",
 ].join(",");
 
 function SlackProvider() {
@@ -160,6 +171,14 @@ export const authOptions: NextAuthOptions = {
           token.googleRefreshToken ??= previous.googleRefreshToken;
           token.googleExpiresAt ??= previous.googleExpiresAt;
           token.slackUserToken ??= previous.slackUserToken;
+          // Slack's identity endpoint (deliberately, see userinfo above)
+          // isn't granted the scope that would return a name/email, so
+          // its profile() returns them as null — which would otherwise
+          // blank out the "Signed in as ..." greeting Google already set.
+          // Keep whichever provider actually told us a name/email/photo.
+          token.name ??= previous.name;
+          token.email ??= previous.email;
+          token.picture ??= previous.picture;
         }
         if (account.provider === "google") {
           token.googleAccessToken = account.access_token;
