@@ -24,12 +24,32 @@ export type Urgency = "urgent" | "soon" | "normal";
 // longer ask for this at all. Kept as "urgent"/"soon"/"normal" internally
 // (so scoreUrgency's existing keyword guesses below still line up), but
 // shown to the teacher as Urgent/Next/Later — the box a task sorts into —
-// each still carrying its own red/orange/green colour (`dot` for the
-// section heading, `pill` for the task row's own colour-coded selector).
-export const URGENCY_STYLES: Record<Urgency, { bar: string; dot: string; pill: string; label: string }> = {
-  urgent: { bar: "border-red-500", dot: "bg-red-500", pill: "bg-red-50 text-red-700", label: "Urgent" },
-  soon: { bar: "border-sorted-amber", dot: "bg-sorted-amber", pill: "bg-sorted-amber-soft text-sorted-amber", label: "Next" },
-  normal: { bar: "border-sorted-triage", dot: "bg-sorted-triage", pill: "bg-sorted-triage-soft text-sorted-triage-dark", label: "Later" },
+// each still carrying its own red/orange/green colour: `dot` for the small
+// heading marker, `pill` for a task's own colour-coded badge, and `box`
+// for the section card itself (Adam: "Boxes need to be the colour of
+// their label").
+export const URGENCY_STYLES: Record<Urgency, { bar: string; dot: string; pill: string; box: string; label: string }> = {
+  urgent: {
+    bar: "border-red-500",
+    dot: "bg-red-500",
+    pill: "bg-red-50 text-red-700",
+    box: "border-red-200 bg-red-50",
+    label: "Urgent",
+  },
+  soon: {
+    bar: "border-sorted-amber",
+    dot: "bg-sorted-amber",
+    pill: "bg-sorted-amber-soft text-sorted-amber",
+    box: "border-sorted-amber/30 bg-sorted-amber-soft",
+    label: "Next",
+  },
+  normal: {
+    bar: "border-sorted-triage",
+    dot: "bg-sorted-triage",
+    pill: "bg-sorted-triage-soft text-sorted-triage-dark",
+    box: "border-sorted-triage/30 bg-sorted-triage-soft",
+    label: "Later",
+  },
 };
 
 export const URGENCY_ORDER: Urgency[] = ["urgent", "soon", "normal"];
