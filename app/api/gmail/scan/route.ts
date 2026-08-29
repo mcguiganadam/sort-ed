@@ -75,6 +75,7 @@ export async function GET(req: NextRequest) {
         from: cleanSenderName(from),
         subject,
         snippet: summarize({ subject, body: rawSnippet }),
+        raw: rawSnippet,
         suggestedType,
         suggestedInitials: initialsFrom(from),
         urgency: scoreUrgency(classifyText, from),

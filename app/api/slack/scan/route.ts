@@ -76,6 +76,7 @@ export async function GET(req: NextRequest) {
           ref: msg.ts,
           from,
           snippet: summarize({ body: cleanedText }),
+          raw: cleanedText,
           suggestedType,
           suggestedInitials: initialsFrom(from),
           urgency: scoreUrgency(cleanedText, from),

@@ -5,16 +5,23 @@
 // Single merged feed of recent Gmail + Slack activity that looks sortable,
 // interleaved by recency, each item colour-coded twice: an urgency bar
 // (red/amber/green, keyword-based — see lib/heuristics.ts scoreUrgency)
-// and a category badge (pastoral/inclusion/parent/etc.). Every "who/what"
-// summary line is built locally from data already fetched for
-// classification — nothing here is sent to a third-party model API.
+// and a category badge (pastoral/inclusion/parent/etc.). The default
+// "who/what" summary line is built locally from data already fetched for
+// classification — nothing is sent to a third-party model API.
+//
+// An OPT-IN toggle additionally offers real AI summarisation via a small
+// model run entirely on-device (lib/localAI.ts, WebGPU/WebLLM) — off by
+// default since it downloads model weights on first use. Even when on,
+// nothing leaves this browser tab: the model runs locally and the network
+// is never involved in producing a summary.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { sortTask, TaskType } from "@/lib/db";
 import { buildMailtoDraft } from "@/lib/mailto";
 import { TASK_TYPE_LABELS } from "@/lib/templates";
 import { Urgency } from "@/lib/heuristics";
+import { isLocalAIAvailable, loadLocalAI, summarizeWithLocalAI, unloadLocalAI } from "@/lib/localAI";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import SlackSignInButton from "@/components/SlackSignInButton";
 
@@ -23,12 +30,15 @@ interface DetectedItem {
   from: string;
   subject?: string;
   snippet: string;
+  raw: string;
   suggestedType: TaskType | null;
   suggestedInitials: string;
   urgency: Urgency;
   timestamp: number;
   source: "gmail" | "slack";
 }
+
+type AIStatus = "idle" | "loading" | "ready" | "error";
 
 const CATEGORY_STYLES: Record<TaskType, string> = {
   pastoral: "bg-rose-50 text-rose-700",
@@ -61,6 +71,10 @@ function timeAgo(ms: number): string {
   return `${Math.round(diffHr / 24)}d ago`;
 }
 
+function itemKey(item: DetectedItem): string {
+  return `${item.source}:${item.ref}`;
+}
+
 export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) {
   const { data: session } = useSession();
   const googleConnected = Boolean((session as any)?.googleConnected);
@@ -70,6 +84,14 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+
+  // On-device AI summarisation — opt-in, see lib/localAI.ts.
+  const [aiEnabled, setAiEnabled] = useState(false);
+  const [aiStatus, setAiStatus] = useState<AIStatus>("idle");
+  const [aiProgressText, setAiProgressText] = useState("");
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiSummaries, setAiSummaries] = useState<Record<string, string>>({});
+  const [aiSummarizing, setAiSummarizing] = useState<Set<string>>(new Set());
 
   async function scan() {
     setLoading(true);
@@ -112,11 +134,78 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
       source: item.source === "gmail" ? "gmail" : "slack",
       sourceRef: item.ref,
     });
-    setDismissed((prev) => new Set(prev).add(`${item.source}:${item.ref}`));
+    setDismissed((prev) => new Set(prev).add(itemKey(item)));
     onSorted();
   }
 
-  const visibleItems = items?.filter((i) => !dismissed.has(`${i.source}:${i.ref}`)) ?? [];
+  async function handleToggleAI() {
+    if (aiEnabled) {
+      setAiEnabled(false);
+      setAiStatus("idle");
+      setAiSummaries({});
+      unloadLocalAI().catch(() => {
+        // best-effort cleanup; nothing to surface to the teacher if this fails
+      });
+      return;
+    }
+    if (!isLocalAIAvailable()) {
+      setAiError("This browser doesn't support on-device AI (needs WebGPU — try a recent Chrome or Edge).");
+      setAiStatus("error");
+      return;
+    }
+    setAiEnabled(true);
+    setAiStatus("loading");
+    setAiError(null);
+    setAiProgressText("");
+    try {
+      await loadLocalAI((report) => setAiProgressText(report.text));
+      setAiStatus("ready");
+    } catch (err) {
+      setAiStatus("error");
+      setAiError(err instanceof Error ? err.message : "Couldn't load the on-device model.");
+      setAiEnabled(false);
+    }
+  }
+
+  // Once the on-device model is ready, summarise any visible items that
+  // don't have an AI summary yet — one at a time, in the background, so
+  // the feed fills in progressively rather than blocking on a big batch.
+  useEffect(() => {
+    if (!aiEnabled || aiStatus !== "ready" || !items) return;
+    const pending = items.filter((i) => !(itemKey(i) in aiSummaries) && !aiSummarizing.has(itemKey(i)));
+    if (pending.length === 0) return;
+
+    let cancelled = false;
+    (async () => {
+      for (const item of pending) {
+        if (cancelled) break;
+        const key = itemKey(item);
+        setAiSummarizing((prev) => new Set(prev).add(key));
+        try {
+          const summary = await summarizeWithLocalAI({ from: item.from, subject: item.subject, body: item.raw });
+          if (!cancelled) setAiSummaries((prev) => ({ ...prev, [key]: summary }));
+        } catch {
+          // on-device summarising failed for this item — the heuristic snippet stays as the fallback
+        } finally {
+          if (!cancelled) {
+            setAiSummarizing((prev) => {
+              const next = new Set(prev);
+              next.delete(key);
+              return next;
+            });
+          }
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // Re-run whenever a fresh scan brings in items this hasn't summarised yet.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, aiEnabled, aiStatus]);
+
+  const visibleItems = items?.filter((i) => !dismissed.has(itemKey(i))) ?? [];
   const anyConnected = googleConnected || slackConnected;
 
   return (
@@ -137,9 +226,31 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
       </div>
       <p className="mt-1 text-xs text-sorted-ink-soft">
         Read-only, and summarised entirely on this request — nothing scanned here is stored, and
-        no message content is ever sent to an AI service. It's only ever held in this browser tab
+        no message content is sent anywhere by default. It's only ever held in this browser tab
         while you decide what to sort.
       </p>
+
+      {anyConnected && (
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+          <label className="inline-flex cursor-pointer select-none items-center gap-1.5">
+            <input
+              type="checkbox"
+              checked={aiEnabled}
+              onChange={handleToggleAI}
+              className="h-3.5 w-3.5 rounded border-sorted-border"
+            />
+            <span className="text-sorted-ink-soft">
+              On-device AI summaries — model runs in this browser, nothing is sent to a server
+            </span>
+          </label>
+          {aiStatus === "loading" && (
+            <span className="text-sorted-ink-soft/70">
+              Downloading a small AI model to this browser (one-time, ~700MB)… {aiProgressText}
+            </span>
+          )}
+          {aiStatus === "error" && aiError && <span className="text-red-600">{aiError}</span>}
+        </div>
+      )}
 
       {!anyConnected && (
         <div className="mt-4 rounded-xl border border-dashed border-sorted-border p-4 text-sm text-sorted-primary-dark">
@@ -177,9 +288,14 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
           <ul className="mt-3 space-y-2">
             {visibleItems.map((item) => {
               const urgencyStyle = URGENCY_STYLES[item.urgency];
+              const key = itemKey(item);
+              const aiSummary = aiSummaries[key];
+              const isSummarizing = aiEnabled && aiStatus === "ready" && aiSummarizing.has(key);
+              const displaySnippet = aiSummary ?? item.snippet;
+
               return (
                 <li
-                  key={`${item.source}:${item.ref}`}
+                  key={key}
                   className={`rounded-lg border-l-4 bg-sorted-bg px-3 py-2 text-sm ${urgencyStyle.bar}`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
@@ -191,8 +307,16 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
                       <span className="whitespace-nowrap text-[10px] font-medium uppercase tracking-wide text-sorted-ink-soft">
                         {SOURCE_LABEL[item.source]}
                       </span>
+                      {aiSummary && (
+                        <span
+                          className="whitespace-nowrap rounded-full bg-sorted-primary-soft px-1.5 py-0.5 text-[10px] font-medium text-sorted-primary-dark"
+                          title="Summarised on-device"
+                        >
+                          AI
+                        </span>
+                      )}
                       <span className="truncate text-sorted-ink">
-                        <strong>{item.from}</strong> — {item.snippet}
+                        <strong>{item.from}</strong> — {isSummarizing ? "Summarising…" : displaySnippet}
                       </span>
                     </div>
                     {item.suggestedType && (

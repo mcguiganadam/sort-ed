@@ -24,6 +24,7 @@ export interface DetectedItem {
   from: string;
   subject?: string; // gmail only — used to build "Re:" reply drafts
   snippet: string; // local "who — what" summary line, ready to display
+  raw: string; // the underlying snippet/message text, for the optional on-device AI pass (lib/localAI.ts) — never sent anywhere itself
   suggestedType: TaskType | null;
   suggestedInitials: string;
   urgency: Urgency;
