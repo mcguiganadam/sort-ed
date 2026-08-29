@@ -90,24 +90,29 @@ export async function summarizeWithLocalAI(params: {
         role: "system",
         content:
           "You write a one-clause summary of what a message is asking for or telling the reader, " +
-          "for a busy teacher's inbox. Rules: under 20 words; plain sentence, no preamble; never " +
-          "write labels like 'From:', 'To:', 'Message:', or repeat the sender's name (the reader " +
-          "already sees who it's from). " +
+          "for a busy teacher's inbox they're scanning at a glance. Rules: under 10 words; plain " +
+          "sentence, no preamble; never write labels like 'From:', 'To:', 'Message:', or repeat the " +
+          "sender's name (the reader already sees who it's from). " +
           "Bad: 'From: IT Helpdesk. Message: password reset needed.' " +
-          "Good: 'Your password needs resetting before Friday.'",
+          "Good: 'Password needs resetting before Friday.'",
       },
       { role: "user", content: `Sender: ${from}\n\n${text}` },
     ],
     temperature: 0.2,
-    max_tokens: 50,
+    // Kept tight on purpose — this is a feed line, not a paragraph, and a
+    // low max_tokens also caps how far a small model can run on before a
+    // stop sequence kicks in if it starts drifting.
+    max_tokens: 25,
   });
 
   const result = completion.choices[0]?.message?.content?.trim();
   // A tiny guard against the exact failure mode above slipping through
   // anyway — fall back to the local heuristic summary rather than show a
-  // "From: ..." echo if it does.
+  // "From: ..." echo if it does. Matches summarize()'s cap in
+  // lib/heuristics.ts so the fallback isn't longer than the AI path would
+  // have been.
   if (!result || /^(from|to|sender|message)\s*:/i.test(result)) {
-    return body.slice(0, 180);
+    return body.length > 90 ? `${body.slice(0, 90).trimEnd()}…` : body;
   }
   return result;
 }

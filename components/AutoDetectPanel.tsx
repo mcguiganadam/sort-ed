@@ -298,30 +298,40 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
                   key={key}
                   className={`overflow-hidden rounded-lg border-l-4 bg-sorted-bg px-3 py-2 text-sm ${urgencyStyle.bar}`}
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex min-w-0 items-center gap-2">
+                  {/* Deliberately ONE flat flex row, no nesting and no flex-wrap: the
+                      previous version nested a "flex min-w-0" group inside a
+                      "flex flex-wrap justify-between" parent, and flex-wrap's
+                      line-breaking decision is based on each item's *hypothetical*
+                      (un-shrunk) content width — which for a nowrap text node is
+                      its full, un-truncated width regardless of min-w-0 further
+                      down. That's what let a long subject line force the row to
+                      overflow/wrap instead of eliding. With everything as direct
+                      siblings of one non-wrapping flex container, the summary
+                      span is the only flexible (flex-1 min-w-0) item, so it's the
+                      only one that can absorb a too-narrow row, and the fixed-size
+                      badges sit wherever their shrink-0 width puts them. */}
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${urgencyStyle.dot}`}
+                      title={urgencyStyle.label}
+                    />
+                    <span className="shrink-0 whitespace-nowrap text-[10px] font-medium uppercase tracking-wide text-sorted-ink-soft">
+                      {SOURCE_LABEL[item.source]}
+                    </span>
+                    {aiSummary && (
                       <span
-                        className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${urgencyStyle.dot}`}
-                        title={urgencyStyle.label}
-                      />
-                      <span className="shrink-0 whitespace-nowrap text-[10px] font-medium uppercase tracking-wide text-sorted-ink-soft">
-                        {SOURCE_LABEL[item.source]}
+                        className="shrink-0 whitespace-nowrap rounded-full bg-sorted-primary-soft px-1.5 py-0.5 text-[10px] font-medium text-sorted-primary-dark"
+                        title="Summarised on-device"
+                      >
+                        AI
                       </span>
-                      {aiSummary && (
-                        <span
-                          className="shrink-0 whitespace-nowrap rounded-full bg-sorted-primary-soft px-1.5 py-0.5 text-[10px] font-medium text-sorted-primary-dark"
-                          title="Summarised on-device"
-                        >
-                          AI
-                        </span>
-                      )}
-                      <span className="min-w-0 flex-1 truncate text-sorted-ink">
-                        <strong>{item.from}</strong> — {isSummarizing ? "Summarising…" : displaySnippet}
-                      </span>
-                    </div>
+                    )}
+                    <span className="min-w-0 flex-1 truncate text-sorted-ink">
+                      <strong>{item.from}</strong> — {isSummarizing ? "Summarising…" : displaySnippet}
+                    </span>
                     {item.suggestedType && (
                       <span
-                        className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs ${CATEGORY_STYLES[item.suggestedType]}`}
+                        className={`shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-xs ${CATEGORY_STYLES[item.suggestedType]}`}
                       >
                         {TASK_TYPE_LABELS[item.suggestedType]}
                       </span>

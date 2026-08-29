@@ -112,6 +112,21 @@ export function cleanSenderName(from: string): string {
   return (match ? match[1] : from).trim();
 }
 
+// Feed lines are meant to be scanned in a glance, not read — 180 characters
+// (the old cap) is roughly two full sentences and was itself part of why the
+// feed felt noisy ("summaries don't summarise that much"), independent of
+// whatever CSS truncation is or isn't doing. Cut well before that, and cut
+// on a word boundary rather than mid-word, so short is also tidy.
+const MAX_SUMMARY_CHARS = 90;
+
+function truncateAtWord(text: string, maxChars: number): string {
+  if (text.length <= maxChars) return text;
+  const cut = text.slice(0, maxChars);
+  const lastSpace = cut.lastIndexOf(" ");
+  const trimmed = lastSpace > maxChars * 0.6 ? cut.slice(0, lastSpace) : cut;
+  return `${trimmed.trimEnd()}…`;
+}
+
 // Builds the short "what this is" line shown next to the sender's name in
 // the feed, from whatever was already fetched for classification — Gmail's
 // own auto-generated snippet, or the Slack message text. No additional
@@ -120,14 +135,13 @@ export function summarize(params: { subject?: string; body: string }): string {
   const { subject, body } = params;
   const cleanedBody = body.replace(/\s+/g, " ").trim();
   const cleanedSubject = subject?.replace(/\s+/g, " ").trim();
-  if (
+  const combined =
     cleanedSubject &&
     cleanedBody &&
     !cleanedBody.toLowerCase().startsWith(cleanedSubject.toLowerCase().slice(0, 12))
-  ) {
-    return `${cleanedSubject} — ${cleanedBody}`.slice(0, 180);
-  }
-  return (cleanedBody || cleanedSubject || "").slice(0, 180);
+      ? `${cleanedSubject} — ${cleanedBody}`
+      : cleanedBody || cleanedSubject || "";
+  return truncateAtWord(combined, MAX_SUMMARY_CHARS);
 }
 
 export function initialsFrom(nameOrEmail: string): string {
