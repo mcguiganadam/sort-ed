@@ -62,7 +62,24 @@ function SlackProvider() {
       params: { scope: "", user_scope: SLACK_USER_SCOPES },
     },
     token: "https://slack.com/api/oauth.v2.access",
-    userinfo: "https://slack.com/api/users.identity",
+    userinfo: {
+      url: "https://slack.com/api/users.identity",
+      // Because we deliberately request zero bot scopes (see the empty
+      // `scope` above), Slack's token response has no top-level
+      // `access_token` — only `authed_user.access_token`. NextAuth's
+      // default userinfo fetch (openid-client's requestResource) assumes
+      // `tokens.access_token` exists and throws "access_token not present
+      // in TokenSet" before it ever makes a request. Supplying our own
+      // `request` bypasses that assumption and calls Slack directly with
+      // the user token we actually have.
+      async request({ tokens }: { tokens: any }) {
+        const userToken = tokens.authed_user?.access_token ?? tokens.access_token;
+        const res = await fetch("https://slack.com/api/users.identity", {
+          headers: { Authorization: `Bearer ${userToken}` },
+        });
+        return res.json();
+      },
+    },
     clientId: process.env.SLACK_CLIENT_ID,
     clientSecret: process.env.SLACK_CLIENT_SECRET,
     checks: ["state" as const],
