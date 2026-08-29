@@ -13,13 +13,30 @@
 // the user, this move the item to one of the three urgency boxes." So
 // each row now shows its urgency and category as plain (non-interactive)
 // pills, plus an Edit button; Edit expands a small panel below the row
-// with the three Urgent/Next/Later options to choose from and the task's
-// category shown for context, and OK applies the choice and closes the
-// panel — the task re-sorts into its new box on the next render.
+// with the three Urgent/Next/Later options to choose from.
+//
+// The category shown in that panel started out read-only, but Adam
+// followed up ("They do not appear in the edit" — the category couldn't
+// actually be changed there) asking for it to be pickable too, not just
+// displayed. It's now a coloured <select> right next to the urgency
+// buttons, defaulting to the task's current category — OK applies both
+// the chosen urgency and the chosen category together.
 import { useState } from "react";
-import { SortedTask, deleteTask, updateTask } from "@/lib/db";
+import { SortedTask, TaskType, deleteTask, updateTask } from "@/lib/db";
 import { TASK_TYPE_LABELS, CATEGORY_STYLES } from "@/lib/templates";
 import { Urgency, URGENCY_ORDER, URGENCY_STYLES } from "@/lib/heuristics";
+
+const TASK_TYPES: TaskType[] = [
+  "pastoral",
+  "inclusion",
+  "parent",
+  "leadership",
+  "admin",
+  "planning",
+  "assessment",
+  "ideas",
+  "pd",
+];
 
 export default function SortedList({
   tasks,
@@ -30,6 +47,7 @@ export default function SortedList({
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingUrgency, setPendingUrgency] = useState<Urgency>("normal");
+  const [pendingCategory, setPendingCategory] = useState<TaskType>("pastoral");
 
   async function handleDone(task: SortedTask) {
     await deleteTask(task.id);
@@ -43,10 +61,11 @@ export default function SortedList({
     }
     setEditingId(task.id);
     setPendingUrgency(task.urgency ?? "normal");
+    setPendingCategory(task.taskType);
   }
 
   async function handleApply(task: SortedTask) {
-    await updateTask(task.id, { urgency: pendingUrgency });
+    await updateTask(task.id, { urgency: pendingUrgency, taskType: pendingCategory });
     setEditingId(null);
     onChanged();
   }
@@ -122,12 +141,18 @@ export default function SortedList({
                             {URGENCY_STYLES[u].label}
                           </button>
                         ))}
-                        <span className="ml-2 shrink-0 text-xs text-sorted-ink-soft">
-                          Category:{" "}
-                          <span className={`rounded-full px-2 py-0.5 font-medium ${CATEGORY_STYLES[task.taskType]}`}>
-                            {TASK_TYPE_LABELS[task.taskType]}
-                          </span>
-                        </span>
+                        <span className="ml-2 shrink-0 text-xs text-sorted-ink-soft">Category:</span>
+                        <select
+                          value={pendingCategory}
+                          onChange={(e) => setPendingCategory(e.target.value as TaskType)}
+                          className={`shrink-0 rounded-full border-none px-2 py-0.5 text-xs font-medium outline-none ${CATEGORY_STYLES[pendingCategory]}`}
+                        >
+                          {TASK_TYPES.map((t) => (
+                            <option key={t} value={t}>
+                              {TASK_TYPE_LABELS[t]}
+                            </option>
+                          ))}
+                        </select>
                         <button
                           onClick={() => handleApply(task)}
                           className="ml-auto shrink-0 rounded-full bg-sorted-primary px-3 py-1 text-xs font-medium text-white transition hover:bg-sorted-primary-dark"
