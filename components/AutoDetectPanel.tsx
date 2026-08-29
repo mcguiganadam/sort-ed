@@ -3,11 +3,14 @@
 // components/AutoDetectPanel.tsx
 //
 // Single merged feed of recent Gmail + Slack activity that looks sortable,
-// interleaved by recency, each item colour-coded twice: an urgency bar
-// (red/amber/green, keyword-based — see lib/heuristics.ts scoreUrgency)
-// and a category badge (pastoral/inclusion/parent/etc.). The "who/what"
-// summary line is built locally from data already fetched for
-// classification — nothing is sent to a third-party model API.
+// interleaved by recency. Each item is summarised and, where a keyword rule
+// recognises it, labelled with one of the same categories quick capture
+// uses (lib/heuristics.ts classifySnippet) — but deliberately NOT
+// colour-coded automatically any more. This used to also auto-compute and
+// display an urgency colour per item; per Adam's "too much decision
+// making" feedback, that decision now belongs to the teacher, made once
+// with UrgencyPicker at the moment of sorting (same control quick capture
+// uses), not guessed and displayed passively before they've even looked.
 //
 // This used to also offer an opt-in on-device AI summariser
 // (lib/localAI.ts, WebGPU/WebLLM) — removed on Adam's call after it kept
@@ -22,6 +25,7 @@ import { useSession } from "next-auth/react";
 import { sortTask, ignoreItem, listIgnoredRefs, TaskType } from "@/lib/db";
 import { TASK_TYPE_LABELS } from "@/lib/templates";
 import { Urgency } from "@/lib/heuristics";
+import UrgencyPicker from "@/components/UrgencyPicker";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import SlackSignInButton from "@/components/SlackSignInButton";
 
@@ -47,12 +51,6 @@ const CATEGORY_STYLES: Record<TaskType, string> = {
   planning: "bg-indigo-50 text-indigo-700",
   assessment: "bg-teal-50 text-teal-700",
   ideas: "bg-lime-50 text-lime-700",
-};
-
-const URGENCY_STYLES: Record<Urgency, { bar: string; dot: string; label: string }> = {
-  urgent: { bar: "border-red-500", dot: "bg-red-500", label: "Urgent" },
-  soon: { bar: "border-sorted-amber", dot: "bg-sorted-amber", label: "Soon" },
-  normal: { bar: "border-sorted-triage", dot: "bg-sorted-triage", label: "Routine" },
 };
 
 const SOURCE_LABEL: Record<DetectedItem["source"], string> = {
@@ -83,6 +81,11 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
   const [errors, setErrors] = useState<string[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [ignoredRefs, setIgnoredRefs] = useState<Set<string>>(new Set());
+  // Per-item urgency the teacher has explicitly picked in UrgencyPicker,
+  // keyed by itemKey. Falls back to the server's keyword-guessed
+  // item.urgency as a starting point until touched — a default the teacher
+  // can see and change, not a decision made silently on their behalf.
+  const [urgencyChoice, setUrgencyChoice] = useState<Record<string, Urgency>>({});
 
   // Loaded once on mount so a message ignored in a previous visit stays
   // hidden from the very first scan, not just after this tab ignores it.
@@ -127,6 +130,7 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
     if (!item.suggestedType) return;
     await sortTask({
       taskType: item.suggestedType,
+      urgency: urgencyChoice[itemKey(item)] ?? item.urgency,
       initialCapture: `${item.suggestedInitials} — via ${SOURCE_LABEL[item.source]}`,
       source: item.source === "gmail" ? "gmail" : "slack",
       sourceRef: item.ref,
@@ -206,14 +210,11 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
 
           <ul className="mt-3 space-y-2">
             {visibleItems.map((item) => {
-              const urgencyStyle = URGENCY_STYLES[item.urgency];
               const key = itemKey(item);
+              const chosenUrgency = urgencyChoice[key] ?? item.urgency;
 
               return (
-                <li
-                  key={key}
-                  className={`overflow-hidden rounded-lg border-l-4 bg-sorted-bg px-3 py-2 text-sm ${urgencyStyle.bar}`}
-                >
+                <li key={key} className="overflow-hidden rounded-lg bg-sorted-bg px-3 py-2 text-sm">
                   {/* Deliberately ONE flat flex row, no nesting and no flex-wrap: the
                       previous version nested a "flex min-w-0" group inside a
                       "flex flex-wrap justify-between" parent, and flex-wrap's
@@ -227,10 +228,6 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
                       only one that can absorb a too-narrow row, and the fixed-size
                       badges sit wherever their shrink-0 width puts them. */}
                   <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${urgencyStyle.dot}`}
-                      title={urgencyStyle.label}
-                    />
                     <span className="shrink-0 whitespace-nowrap text-[10px] font-medium uppercase tracking-wide text-sorted-ink-soft">
                       {SOURCE_LABEL[item.source]}
                     </span>
@@ -246,7 +243,15 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
                     )}
                   </div>
                   <div className="mt-2 flex items-center gap-3 text-xs">
-                    <button onClick={() => handleSort(item)} className="font-medium text-sorted-primary hover:underline">
+                    <UrgencyPicker
+                      value={chosenUrgency}
+                      onChange={(u) => setUrgencyChoice((prev) => ({ ...prev, [key]: u }))}
+                    />
+                    <button
+                      onClick={() => handleSort(item)}
+                      disabled={!item.suggestedType}
+                      className="font-medium text-sorted-primary hover:underline disabled:cursor-not-allowed disabled:text-sorted-ink-soft/50 disabled:no-underline"
+                    >
                       Sort it
                     </button>
                     <button
@@ -257,6 +262,11 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
                     </button>
                     <span className="ml-auto text-sorted-ink-soft/70">{timeAgo(item.timestamp)}</span>
                   </div>
+                  {!item.suggestedType && (
+                    <p className="mt-1 text-[11px] text-sorted-ink-soft/70">
+                      No category recognised — Ignore it, or add it via Quick capture instead.
+                    </p>
+                  )}
                 </li>
               );
             })}

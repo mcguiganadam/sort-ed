@@ -19,6 +19,21 @@ import { TaskType } from "./db";
 
 export type Urgency = "urgent" | "soon" | "normal";
 
+// Shared red/orange/green visual language for time-sensitivity, used
+// wherever a teacher sorts something — the auto-detect feed, quick
+// capture, and the sorted list itself. Kept as "urgent"/"soon"/"normal"
+// internally (so scoreUrgency's existing keyword guesses below can still
+// pre-select a sensible starting dot), but always shown to a teacher as
+// plain red/orange/green — a colour the teacher picks, not one the app
+// silently assigns.
+export const URGENCY_STYLES: Record<Urgency, { bar: string; dot: string; label: string }> = {
+  urgent: { bar: "border-red-500", dot: "bg-red-500", label: "Red — time-sensitive" },
+  soon: { bar: "border-sorted-amber", dot: "bg-sorted-amber", label: "Orange — soon" },
+  normal: { bar: "border-sorted-triage", dot: "bg-sorted-triage", label: "Green — routine" },
+};
+
+export const URGENCY_ORDER: Urgency[] = ["urgent", "soon", "normal"];
+
 export interface DetectedItem {
   ref: string; // gmail message id or slack ts
   from: string;

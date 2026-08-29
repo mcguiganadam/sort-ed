@@ -12,6 +12,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 import { openDB, DBSchema, IDBPDatabase } from "idb";
+import type { Urgency } from "./heuristics";
 
 export type TaskType =
   | "pastoral"
@@ -26,6 +27,11 @@ export type TaskType =
 export interface SortedTask {
   id: string;
   taskType: TaskType;
+  // Red/orange/green, chosen by the teacher at sort time (see
+  // components/UrgencyPicker.tsx) — optional only so tasks sorted before
+  // this field existed still load without crashing; every new task always
+  // gets one (sortTask defaults to "normal" below).
+  urgency?: Urgency;
   initialCapture: string; // "M.O. — lunchtime, playground"
   fullLog?: Record<string, string>; // filled in during the batch window
   source?: "manual" | "gmail" | "slack"; // where the capture originated
@@ -105,6 +111,7 @@ function newId() {
 export async function sortTask(input: {
   taskType: TaskType;
   initialCapture: string;
+  urgency?: Urgency;
   source?: SortedTask["source"];
   sourceRef?: string;
 }): Promise<SortedTask> {
@@ -112,6 +119,7 @@ export async function sortTask(input: {
   const task: SortedTask = {
     id: newId(),
     taskType: input.taskType,
+    urgency: input.urgency ?? "normal",
     initialCapture: input.initialCapture,
     source: input.source ?? "manual",
     sourceRef: input.sourceRef,

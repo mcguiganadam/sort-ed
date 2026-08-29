@@ -1,8 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { SortedTask, completeTask, deleteTask } from "@/lib/db";
-import { DEFAULT_TEMPLATES, TASK_TYPE_LABELS } from "@/lib/templates";
+// components/SortedList.tsx
+//
+// The sorted list itself — grouped by the same category labels used
+// everywhere else in the app, each task shown with the red/orange/green
+// the teacher picked at sort time (lib/heuristics.ts URGENCY_STYLES).
+//
+// This used to expand into a per-category template form ("Log now" —
+// Support type, Status, etc.) before a task could be marked done, which
+// was its own small pile of decisions on top of sorting and colour-coding.
+// Per Adam's "too much decision making" feedback, that's gone: a task sits
+// here, coloured and labelled, until the teacher taps "Done" — which
+// simply removes it. Nothing here resets by day either: listOpenTasks()
+// has no date filter, so a sorted task carries over for as many days as it
+// takes until it's deleted, which was already true and is now the only
+// way a task leaves this list.
+import { SortedTask, deleteTask } from "@/lib/db";
+import { TASK_TYPE_LABELS } from "@/lib/templates";
+import { URGENCY_STYLES } from "@/lib/heuristics";
 
 export default function SortedList({
   tasks,
@@ -11,26 +26,12 @@ export default function SortedList({
   tasks: SortedTask[];
   onChanged: () => void;
 }) {
-  const [openId, setOpenId] = useState<string | null>(null);
-  const [formValues, setFormValues] = useState<Record<string, string>>({});
-
   const grouped = tasks.reduce<Record<string, SortedTask[]>>((acc, t) => {
     (acc[t.taskType] ??= []).push(t);
     return acc;
   }, {});
 
-  function openTemplate(task: SortedTask) {
-    setOpenId(task.id);
-    setFormValues({});
-  }
-
-  async function handleComplete(task: SortedTask) {
-    await completeTask(task.id, formValues);
-    setOpenId(null);
-    onChanged();
-  }
-
-  async function handleDelete(task: SortedTask) {
+  async function handleDone(task: SortedTask) {
     await deleteTask(task.id);
     onChanged();
   }
@@ -51,61 +52,31 @@ export default function SortedList({
             {TASK_TYPE_LABELS[type as keyof typeof TASK_TYPE_LABELS]} ({group.length})
           </h3>
           <ul className="mt-3 space-y-2">
-            {group.map((task) => (
-              <li key={task.id} className="rounded-lg bg-sorted-bg px-3 py-2">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm text-sorted-ink">{task.initialCapture}</span>
-                  <div className="flex gap-3 text-xs">
-                    <button onClick={() => openTemplate(task)} className="font-medium text-sorted-primary hover:underline">
-                      Log now
-                    </button>
-                    <button onClick={() => handleDelete(task)} className="text-sorted-ink-soft hover:text-red-500">
-                      remove
-                    </button>
-                  </div>
-                </div>
-
-                {openId === task.id && (
-                  <div className="mt-3 space-y-2 border-t border-sorted-border pt-3">
-                    {DEFAULT_TEMPLATES[task.taskType].fields.map((field) => (
-                      <div key={field.key}>
-                        <label className="text-xs font-medium text-sorted-primary-dark">{field.label}</label>
-                        {field.options ? (
-                          <div className="mt-1 flex flex-wrap gap-1">
-                            {field.options.map((opt) => (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() => setFormValues((v) => ({ ...v, [field.key]: opt }))}
-                                className={`rounded-full px-2 py-1 text-xs font-medium transition ${
-                                  formValues[field.key] === opt
-                                    ? "bg-sorted-primary text-white"
-                                    : "bg-white text-sorted-primary-dark ring-1 ring-sorted-primary/20 hover:bg-sorted-primary-soft"
-                                }`}
-                              >
-                                {opt}
-                              </button>
-                            ))}
-                          </div>
-                        ) : (
-                          <input
-                            className="mt-1 w-full rounded border border-sorted-border px-2 py-1 text-sm outline-none transition focus:border-sorted-primary focus:ring-2 focus:ring-sorted-primary/15"
-                            value={formValues[field.key] ?? ""}
-                            onChange={(e) => setFormValues((v) => ({ ...v, [field.key]: e.target.value }))}
-                          />
-                        )}
-                      </div>
-                    ))}
-                    <button
-                      onClick={() => handleComplete(task)}
-                      className="mt-2 rounded-lg bg-sorted-primary px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-primary-dark"
-                    >
-                      Done
-                    </button>
-                  </div>
-                )}
-              </li>
-            ))}
+            {group.map((task) => {
+              // Tasks sorted before urgency existed have none stored — treat
+              // as green/routine rather than crashing on a missing style.
+              const urgencyStyle = URGENCY_STYLES[task.urgency ?? "normal"];
+              return (
+                <li
+                  key={task.id}
+                  className={`flex items-center justify-between gap-2 rounded-lg border-l-4 bg-sorted-bg px-3 py-2 ${urgencyStyle.bar}`}
+                >
+                  <span className="flex min-w-0 items-center gap-2 text-sm text-sorted-ink">
+                    <span
+                      className={`inline-block h-2 w-2 shrink-0 rounded-full ${urgencyStyle.dot}`}
+                      title={urgencyStyle.label}
+                    />
+                    <span className="truncate">{task.initialCapture}</span>
+                  </span>
+                  <button
+                    onClick={() => handleDone(task)}
+                    className="shrink-0 text-xs font-medium text-sorted-primary hover:underline"
+                  >
+                    Done
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       ))}
