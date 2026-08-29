@@ -6,7 +6,7 @@ import { SortedTask, listOpenTasks, exportAllData, clearAllData } from "@/lib/db
 import TaskCapture from "@/components/TaskCapture";
 import SortedList from "@/components/SortedList";
 import AutoDetectPanel from "@/components/AutoDetectPanel";
-import BatchSuggestion from "@/components/BatchSuggestion";
+import TodaySchedule from "@/components/TodaySchedule";
 import KofiButton from "@/components/KofiButton";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import SlackSignInButton from "@/components/SlackSignInButton";
@@ -91,7 +91,7 @@ export default function Home() {
 
       <div className="mt-8 grid gap-5">
         <TaskCapture onSorted={refresh} />
-        <BatchSuggestion openTasks={tasks} />
+        <TodaySchedule />
         <AutoDetectPanel onSorted={refresh} />
         <SortedList tasks={tasks} onChanged={refresh} />
       </div>
