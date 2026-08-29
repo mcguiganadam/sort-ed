@@ -131,17 +131,19 @@ function truncateAtWord(text: string, maxChars: number): string {
 // the feed, from whatever was already fetched for classification — Gmail's
 // own auto-generated snippet, or the Slack message text. No additional
 // summarisation call (local or remote) is made.
+//
+// A subject line alone was Adam's own read of what's "enough" here — his
+// example: "Jess Barga — ManageBac Behavior Notes" reads fine on its own;
+// appending Gmail's snippet after it ("— Dear PYP teaching staff, As
+// mentioned at our Weds. meeting...") just made an already-informative
+// line longer without adding much. So when there's a subject, that's the
+// whole summary now. Slack messages have no subject, so those still fall
+// back to the message body — there'd be nothing to show otherwise.
 export function summarize(params: { subject?: string; body: string }): string {
   const { subject, body } = params;
   const cleanedBody = body.replace(/\s+/g, " ").trim();
   const cleanedSubject = subject?.replace(/\s+/g, " ").trim();
-  const combined =
-    cleanedSubject &&
-    cleanedBody &&
-    !cleanedBody.toLowerCase().startsWith(cleanedSubject.toLowerCase().slice(0, 12))
-      ? `${cleanedSubject} — ${cleanedBody}`
-      : cleanedBody || cleanedSubject || "";
-  return truncateAtWord(combined, MAX_SUMMARY_CHARS);
+  return truncateAtWord(cleanedSubject || cleanedBody, MAX_SUMMARY_CHARS);
 }
 
 export function initialsFrom(nameOrEmail: string): string {
