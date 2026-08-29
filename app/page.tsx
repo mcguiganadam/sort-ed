@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { SortedTask, listOpenTasks, exportAllData, clearAllData } from "@/lib/db";
 import TaskCapture from "@/components/TaskCapture";
 import SortedList from "@/components/SortedList";
 import AutoDetectPanel from "@/components/AutoDetectPanel";
 import BatchSuggestion from "@/components/BatchSuggestion";
 import KofiButton from "@/components/KofiButton";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
+import SlackSignInButton from "@/components/SlackSignInButton";
 
 function Mark() {
   // Same tick-in-a-squircle as app/icon.svg, inlined so it renders crisp
@@ -80,19 +82,9 @@ export default function Home() {
             </button>
           </>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => signIn("google")}
-              className="rounded-full bg-white px-3 py-1 font-medium text-sorted-primary-dark ring-1 ring-sorted-primary/25 transition hover:bg-sorted-primary hover:text-white hover:ring-sorted-primary"
-            >
-              Connect Google
-            </button>
-            <button
-              onClick={() => signIn("slack")}
-              className="rounded-full bg-white px-3 py-1 font-medium text-sorted-primary-dark ring-1 ring-sorted-primary/25 transition hover:bg-sorted-primary hover:text-white hover:ring-sorted-primary"
-            >
-              Connect Slack
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <GoogleSignInButton />
+            <SlackSignInButton />
           </div>
         )}
       </div>

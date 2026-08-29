@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { sortTask } from "@/lib/db";
 import { buildMailtoDraft } from "@/lib/mailto";
 import { TASK_TYPE_LABELS } from "@/lib/templates";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
+import SlackSignInButton from "@/components/SlackSignInButton";
 
 interface DetectedItem {
   ref: string;
@@ -67,12 +69,7 @@ function SourceBlock({
     return (
       <div className="rounded-xl border border-dashed border-sorted-border p-4 text-sm text-sorted-primary-dark">
         <p className="mb-2">{label} isn't connected yet — nothing is read until you sign in.</p>
-        <button
-          onClick={() => signIn(provider)}
-          className="rounded-full bg-sorted-primary px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-primary-dark"
-        >
-          Connect {label}
-        </button>
+        {provider === "google" ? <GoogleSignInButton /> : <SlackSignInButton />}
       </div>
     );
   }
