@@ -9,7 +9,7 @@ import AutoDetectPanel from "@/components/AutoDetectPanel";
 import TodaySchedule from "@/components/TodaySchedule";
 import KofiButton from "@/components/KofiButton";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
-import SlackSignInButton from "@/components/SlackSignInButton";
+import SlackComingSoon from "@/components/SlackComingSoon";
 
 function Mark() {
   // Same tick-in-a-squircle as app/icon.svg, inlined so it renders crisp
@@ -84,7 +84,7 @@ export default function Home() {
         ) : (
           <div className="flex flex-wrap items-center gap-2">
             <GoogleSignInButton />
-            <SlackSignInButton />
+            <SlackComingSoon />
           </div>
         )}
       </div>

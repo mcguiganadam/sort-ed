@@ -28,7 +28,7 @@ import { sortTask, ignoreItem, listIgnoredRefs, listSortedRefs, TaskType } from 
 import { TASK_TYPE_LABELS, CATEGORY_STYLES } from "@/lib/templates";
 import { Urgency } from "@/lib/heuristics";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
-import SlackSignInButton from "@/components/SlackSignInButton";
+import SlackComingSoon from "@/components/SlackComingSoon";
 
 interface DetectedItem {
   ref: string;
@@ -172,24 +172,25 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
 
       {!anyConnected && (
         <div className="mt-4 rounded-xl border border-dashed border-sorted-border p-4 text-sm text-sorted-primary-dark">
-          <p className="mb-2">Connect Gmail and/or Slack — nothing is read until you sign in.</p>
+          <p className="mb-2">Connect Gmail — nothing is read until you sign in.</p>
           <div className="flex flex-wrap items-center gap-2">
             <GoogleSignInButton />
-            <SlackSignInButton />
+            <SlackComingSoon />
           </div>
         </div>
       )}
 
       {anyConnected && (
         <>
-          {(!googleConnected || !slackConnected) && (
+          {/* Slack dropped out of this nag (Adam: "Hide Slack for now or
+              Add coming soon") — there's no button to act on it with any
+              more, and slackConnected can never flip true for a new sign-in
+              right now, so a "Connect Slack too" prompt here would never
+              go away even after Gmail was connected. */}
+          {!googleConnected && (
             <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg bg-sorted-bg px-3 py-2 text-xs text-sorted-ink-soft">
-              <span>
-                {googleConnected ? "Connect Slack too" : "Connect Gmail too"} to see it in this
-                feed:
-              </span>
-              {!googleConnected && <GoogleSignInButton />}
-              {!slackConnected && <SlackSignInButton />}
+              <span>Connect Gmail too to see it in this feed:</span>
+              <GoogleSignInButton />
             </div>
           )}
 
