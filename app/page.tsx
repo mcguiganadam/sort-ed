@@ -87,13 +87,13 @@ export default function Home() {
           itself). Ko-fi link lives at the bottom-right of the hero box
           below (Adam: remove the standalone "signed in / the dashboard"
           bar, move Support SortEd up into the hero). */}
-      <div className="flex items-center gap-3 px-6 py-6 sm:px-12 lg:px-20 xl:px-24">
+      <div className="flex items-center gap-3 px-6 py-6 sm:px-8 lg:px-12">
         <FlatMark />
         <span className="text-base font-bold uppercase tracking-wide">SortEd</span>
       </div>
 
       {/* Hero */}
-      <div className="border-b-2 border-flat-divider px-6 pt-4 pb-6 sm:px-12 sm:pt-6 sm:pb-8 lg:px-20 lg:pt-8 lg:pb-10 xl:px-24">
+      <div className="border-b-2 border-flat-divider px-6 pt-4 pb-6 sm:px-8 sm:pt-6 sm:pb-8 lg:px-12 lg:pt-8 lg:pb-10">
         <h1 className="font-modernist text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-[56px]">
           Teaching comes first.
         </h1>
@@ -174,7 +174,7 @@ export default function Home() {
         </p>
       </div>
 
-      <footer className="border-t-2 border-flat-divider px-6 py-5 text-xs opacity-60 sm:px-12 lg:px-20 xl:px-24">
+      <footer className="border-t-2 border-flat-divider px-6 py-5 text-xs opacity-60 sm:px-8 lg:px-12">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="max-w-md">
             Everything above stays private — nothing is stored on a server, ever.
