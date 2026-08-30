@@ -35,10 +35,10 @@ import KofiButton from "@/components/KofiButton";
 function FlatMark() {
   return (
     <div
-      className="flex h-8 w-8 shrink-0 items-center justify-center bg-flat-accent"
+      className="flex h-11 w-11 shrink-0 items-center justify-center bg-flat-accent"
       aria-hidden="true"
     >
-      <svg width="16" height="16" viewBox="0 0 32 32">
+      <svg width="22" height="22" viewBox="0 0 32 32">
         <path
           d="M9 17l5 5 9-11.5"
           stroke="#f3f2f2"
@@ -86,13 +86,13 @@ export default function Home() {
       {/* Nav: mark + wordmark only -- no tagline (it's now the hero h1
           itself) and no Ko-fi link (moved to the "signed in" bar below,
           softened to "Say thanks!"). */}
-      <div className="flex items-center gap-3 px-6 py-6 sm:px-12">
+      <div className="flex items-center gap-3 px-6 py-6 sm:px-12 lg:px-16">
         <FlatMark />
-        <span className="text-sm font-bold uppercase tracking-wide">SortEd</span>
+        <span className="text-base font-bold uppercase tracking-wide">SortEd</span>
       </div>
 
       {/* Hero */}
-      <div className="border-b-2 border-flat-divider px-6 py-10 sm:px-12 sm:py-14">
+      <div className="border-b-2 border-flat-divider px-6 py-10 sm:px-12 sm:py-14 lg:px-16 lg:py-16">
         <h1 className="font-modernist text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-[56px]">
           Teaching comes first.
         </h1>
@@ -151,7 +151,7 @@ export default function Home() {
           hero's own sign-in state. Copy adapts slightly from the handoff's
           static "Signed in — the dashboard" so it doesn't claim an
           authenticated state that isn't true yet. */}
-      <div className="flex items-center justify-between border-b-2 border-flat-divider px-6 py-4 sm:px-12">
+      <div className="flex items-center justify-between border-b-2 border-flat-divider px-6 py-4 sm:px-12 lg:px-16">
         <span className="text-[11px] uppercase tracking-[0.12em] opacity-50">
           {status === "authenticated" ? "Signed in — the dashboard" : "The dashboard"}
         </span>
@@ -164,18 +164,18 @@ export default function Home() {
           category pills) can still force a grid track wide if its
           wrapper isn't allowed to shrink. */}
       <div className="grid grid-cols-1 md:grid-cols-2 [&>*]:min-w-0">
-        <div className="border-b-2 border-flat-divider p-6 md:border-r-2">
+        <div className="border-b-2 border-flat-divider p-6 sm:p-8 lg:p-10 md:border-r-2">
           <TaskCapture onSorted={refresh} />
         </div>
-        <div className="border-b-2 border-flat-divider p-6">
+        <div className="border-b-2 border-flat-divider p-6 sm:p-8 lg:p-10">
           <TodaySchedule />
         </div>
-        <div className="p-6 md:col-span-2">
+        <div className="p-6 sm:p-8 lg:p-10 md:col-span-2">
           <AutoDetectPanel onSorted={refresh} />
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 px-6 py-6 sm:px-12">
+      <div className="flex flex-col gap-4 px-6 py-8 sm:px-12 sm:py-10 lg:px-16">
         <SortedList tasks={tasks} onChanged={refresh} />
         <p className="text-sm opacity-60">
           Saved right here on this device. Closing and reopening this tab keeps everything. A
@@ -183,7 +183,7 @@ export default function Home() {
         </p>
       </div>
 
-      <footer className="border-t-2 border-flat-divider px-6 py-5 text-xs opacity-60 sm:px-12">
+      <footer className="border-t-2 border-flat-divider px-6 py-5 text-xs opacity-60 sm:px-12 lg:px-16">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="max-w-md">
             Everything above stays private — nothing is stored on a server, ever.

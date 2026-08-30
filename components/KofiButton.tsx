@@ -6,6 +6,11 @@
 // behind this. Every teacher gets every feature; this is a plain link out
 // to Ko-fi's own hosted donate page — SortEd never touches payment data,
 // card numbers, or webhooks. Set NEXT_PUBLIC_KOFI_USERNAME in .env.local.
+//
+// Restyled for the Modernist system (2026-08-30, Adam): flat-accent blue
+// (same as the hero's "Sign in with Google" / Quick Capture's "Sort it"
+// buttons), zero border-radius, no coffee emoji, no "on Ko-fi" suffix --
+// the old rounded amber pill didn't match the flat system.
 
 export default function KofiButton() {
   const username = process.env.NEXT_PUBLIC_KOFI_USERNAME || "yourusername";
@@ -14,10 +19,9 @@ export default function KofiButton() {
       href={`https://ko-fi.com/${username}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-2 rounded-full border border-sorted-amber/30 bg-sorted-amber-soft px-4 py-2 text-sm font-medium text-sorted-amber shadow-card transition hover:bg-sorted-amber hover:text-white hover:shadow-card-hover"
+      className="inline-flex items-center bg-flat-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-flat-accent-700"
     >
-      <span aria-hidden>☕</span>
-      Support SortEd on Ko-fi
+      Support SortEd
     </a>
   );
 }
