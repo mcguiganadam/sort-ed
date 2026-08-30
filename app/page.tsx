@@ -19,18 +19,18 @@ import KofiButton from "@/components/KofiButton";
 // claude/sorted-design-handoff-20260830-teacher-dashboard.md for the
 // complete spec this was built from.
 //
-// Worth flagging to Adam: the handoff's README "Design Tokens" section
-// lists all 9 category colors for this direction, but the interactive
-// prototype itself (SortEd Redesign.dc.html / TaskRowModernist.dc.html --
-// the part described as "high-fidelity... final for direction 1a")
-// renders every category tag monochrome throughout -- outline when
-// unselected/persistent, filled-dark when selected -- reserving color
-// entirely for urgency (red/orange/blue). That's what's implemented here,
-// since it's the more concrete, clickable spec of the two, but it does
-// mean the 9-color CATEGORY_STYLES palette (lib/templates.ts) -- including
-// the hue-distance work from the last polish pass, see
-// sorted-design-polish-log-20260830.md -- is now unused by this page. It's
-// left in place, not deleted, in case that's the wrong call.
+// The handoff's README "Design Tokens" section lists all 9 category
+// colors for this direction, but the interactive prototype itself
+// (SortEd Redesign.dc.html / TaskRowModernist.dc.html -- the part
+// described as "high-fidelity... final for direction 1a") renders every
+// category tag monochrome throughout -- outline when unselected, filled-
+// dark when selected -- reserving color entirely for urgency (red/orange/
+// blue). Implemented the prototype's behavior; Adam signed off on this
+// (2026-08-30: "monochrome category colors - keep. looks sleek"). The
+// 9-color CATEGORY_STYLES palette (lib/templates.ts) -- including the
+// hue-distance work from the earlier polish pass, see
+// sorted-design-polish-log-20260830.md -- is left in place but unused by
+// this page.
 
 function FlatMark() {
   return (
@@ -123,11 +123,10 @@ export default function Home() {
                   not GoogleSignInButton's official multicolor "G" mark
                   button used elsewhere on this page (the Messages card's
                   own connect prompt still uses that one). Calls the same
-                  signIn("google") next-auth flow either way. Worth
-                  flagging to Adam: Google's sign-in branding guidelines
-                  are a real consideration for the in-flight OAuth
-                  verification, so this trades brand-guideline compliance
-                  here for visual consistency with the approved design. */}
+                  signIn("google") next-auth flow either way. Adam signed
+                  off on keeping this plain style despite the in-flight
+                  Google OAuth verification (2026-08-30: "Google sign-in
+                  button styling - not needed"). */}
               <button
                 onClick={() => signIn("google")}
                 className="bg-flat-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-flat-accent-700"
