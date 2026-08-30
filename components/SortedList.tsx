@@ -3,13 +3,16 @@
 // components/SortedList.tsx
 //
 // The sorted list, grouped into four boxes — Unsorted, then Urgent / Next
-// / Later — the three triage boxes each coloured red/orange/green (Adam:
-// "Boxes need to be the colour of their label" — lib/heuristics.ts
-// URGENCY_STYLES.box). Unsorted is where every new task lands (quick
-// capture, or sorting straight from the mailbox feed — see lib/db.ts
-// sortTask's default) until a teacher actually triages it via Edit below;
-// it gets a plain, neutral box rather than a fourth traffic-light colour,
-// since it isn't a triage level, just the absence of one yet.
+// / Later — the three triage boxes each coloured red/orange/blue (Adam:
+// "Boxes need to be the colour of their label"; the Modernist redesign,
+// design handoff 2026-08-30, keeps this same rule but swaps "Later" from
+// green to the system's blue accent — see the note in app/page.tsx about
+// red being reserved for true urgency, not the default brand colour).
+// Unsorted is where every new task lands (quick capture, or sorting
+// straight from the mailbox feed — see lib/db.ts sortTask's default)
+// until a teacher actually triages it via Edit below; it gets a plain,
+// dashed-outline box rather than a fourth colour, since it isn't a triage
+// level, just the absence of one yet.
 //
 // Changing a task's urgency used to be a live dropdown sitting right on
 // the row, styled as a colour-coded pill. Adam: "Instead of the drop
@@ -23,13 +26,15 @@
 // The category shown in that panel started out read-only, but Adam
 // followed up ("They do not appear in the edit" — the category couldn't
 // actually be changed there) asking for it to be pickable too, not just
-// displayed. It's now a coloured <select> right next to the urgency
-// buttons, defaulting to the task's current category — OK applies both
-// the chosen urgency and the chosen category together.
+// displayed. It's now a row of category buttons (previously a coloured
+// <select>; the Modernist redesign's edit panel uses pill buttons
+// instead, matching Quick Capture's picker), defaulting to the task's
+// current category — OK applies both the chosen urgency and the chosen
+// category together.
 import { useState } from "react";
 import { SortedTask, TaskType, deleteTask, updateTask } from "@/lib/db";
-import { TASK_TYPE_LABELS, CATEGORY_STYLES } from "@/lib/templates";
-import { Urgency, URGENCY_ORDER, TRIAGE_ORDER, URGENCY_STYLES } from "@/lib/heuristics";
+import { TASK_TYPE_LABELS } from "@/lib/templates";
+import { Urgency, URGENCY_ORDER, TRIAGE_ORDER } from "@/lib/heuristics";
 
 const TASK_TYPES: TaskType[] = [
   "pastoral",
@@ -42,6 +47,36 @@ const TASK_TYPES: TaskType[] = [
   "ideas",
   "pd",
 ];
+
+// Group box styling per the handoff's explicit hex values (not the
+// CSS-variable-driven urgBtnStyleA from the prototype's edit-panel picker
+// below, which is a separate case — see the comment above URGENCY_PICKER_STYLES).
+const GROUP_STYLES: Record<Urgency, { box: string; heading: string; label: string }> = {
+  unsorted: { box: "border border-dashed border-flat-divider", heading: "", label: "Unsorted" },
+  urgent: { box: "border-l-4 border-l-flat-urgent bg-flat-urgent-bg", heading: "text-flat-urgent-heading", label: "Urgent" },
+  soon: { box: "border-l-4 border-l-flat-next bg-flat-next-bg", heading: "text-flat-next", label: "Next" },
+  normal: { box: "border-l-4 border-l-flat-accent bg-flat-accent-100", heading: "text-flat-accent-700", label: "Later" },
+};
+
+// The edit panel's urgency-picker buttons (Urgent/Next/Later, selectable).
+// The prototype's own urgBtnStyleA function reads CSS variables that are
+// scoped to blue for the whole redesign (--color-accent, overridden to
+// #2f5a8a right at the top of the page) -- which, followed literally,
+// would make the *selected* "Urgent" button render blue, directly
+// contradicting the handoff's own explicit rule ("red reserved for the
+// Urgent state... don't pull --color-accent as-is for anything that IS
+// urgency-signaling"). Implemented the stated rule here instead of the
+// apparent variable-scoping bug: each option's selected state uses its
+// real urgency colour (matching the group boxes above), not a shared
+// accent variable.
+const URGENCY_PICKER_SELECTED: Record<Urgency, string> = {
+  unsorted: "",
+  urgent: "border border-flat-urgent bg-flat-urgent text-white",
+  soon: "border border-flat-next bg-flat-next text-white",
+  normal: "border border-flat-accent bg-flat-accent text-white",
+};
+const URGENCY_PICKER_UNSELECTED =
+  "border border-flat-divider-mid bg-transparent text-flat-text hover:border-flat-text";
 
 export default function SortedList({
   tasks,
@@ -89,7 +124,7 @@ export default function SortedList({
 
   if (tasks.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-sorted-border p-6 text-center text-sm text-sorted-ink-soft">
+      <div className="border border-dashed border-flat-divider p-6 text-center text-sm opacity-60">
         Nothing here yet.
       </div>
     );
@@ -100,97 +135,89 @@ export default function SortedList({
       {URGENCY_ORDER.map((urgency) => {
         const group = tasks.filter((t) => (t.urgency ?? "unsorted") === urgency);
         if (group.length === 0) return null;
-        const style = URGENCY_STYLES[urgency];
+        const style = GROUP_STYLES[urgency];
 
         return (
-          <div key={urgency} className={`rounded-2xl border p-5 shadow-card ${style.box}`}>
-            <h3 className="flex items-center gap-2 font-display text-sm font-semibold text-sorted-primary-dark">
-              <span className={`inline-block h-2.5 w-2.5 rounded-full ${style.dot}`} />
+          <div key={urgency} className={`p-5 ${style.box}`}>
+            <h3 className={`text-xs font-bold ${style.heading}`}>
               {style.label} ({group.length})
             </h3>
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-3 divide-y divide-flat-divider-soft">
               {group.map((task) => {
                 const isEditing = editingId === task.id;
                 return (
-                  <li key={task.id} className="rounded-lg bg-sorted-bg px-3 py-2 text-sm">
+                  <li key={task.id} className="py-2.5 text-sm first:pt-0">
                     <div className="flex flex-wrap items-center gap-2">
                       {/* No urgency label here any more (Adam: "The Next label
                           (also Urgent and Later) not needed as the box does
                           this job.") — the section's own coloured box (see
-                          style.box below) already says which one this is;
+                          style.box above) already says which one this is;
                           repeating it as a per-row pill was redundant. The
-                          category pill stays, and stays a pill on purpose
-                          (Adam: "should have a pill around it to have it
-                          stand out from the sorted task") — it's the one
-                          piece of information the box's colour can't convey. */}
-                      <span
-                        className={`shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${CATEGORY_STYLES[task.taskType]}`}
-                      >
+                          category pill stays (Adam: "should have a pill
+                          around it to have it stand out from the sorted
+                          task") — it's the one piece of information the
+                          box's colour can't convey. Monochrome outline per
+                          the Modernist redesign, not colour-coded — see the
+                          note at the top of app/page.tsx. */}
+                      <span className="shrink-0 whitespace-nowrap border border-flat-divider-soft px-2 py-0.5 text-xs font-medium">
                         {TASK_TYPE_LABELS[task.taskType]}
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-sorted-ink">{task.initialCapture}</span>
-                      {/* -my-1 py-1 px-1.5: a bigger tap target for touch without
-                          growing the row's visible height or shifting the text's
-                          position — the negative margin gives back exactly what the
-                          padding added. */}
+                      <span className="min-w-0 flex-1 truncate">{task.initialCapture}</span>
                       <button
                         onClick={() => handleEditToggle(task)}
-                        className="-my-1 shrink-0 rounded px-1.5 py-1 text-xs font-medium text-sorted-primary-dark hover:underline"
+                        className="shrink-0 text-xs font-medium underline decoration-dotted hover:opacity-70"
                       >
                         {isEditing ? "Cancel" : "Edit"}
                       </button>
                       <button
                         onClick={() => handleDone(task)}
-                        className="-my-1 shrink-0 rounded px-1.5 py-1 text-xs font-medium text-sorted-primary hover:underline"
+                        className="shrink-0 text-xs font-medium underline decoration-dotted hover:opacity-70"
                       >
                         Done
                       </button>
                     </div>
 
                     {isEditing && (
-                      // Mobile formatting pass: at phone width, the three urgency
-                      // buttons + "Category:" + the select + OK don't fit on one
-                      // line — flex-wrap alone just breaks them across lines
-                      // wherever they happen to run out of room, and OK's ml-auto
-                      // then strands it on its own line, flush right with a big gap
-                      // of empty space to its left. Below sm, this stacks into three
-                      // deliberate rows (urgency / category / OK) instead; at sm and
-                      // up there's room for the original single-line layout, so it
-                      // reverts to flex-row with ml-auto behaving as before.
-                      <div className="mt-2 flex flex-col gap-3 rounded-lg border border-sorted-border bg-white px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2 sm:py-2">
+                      // Mobile formatting: below sm, this stacks into three
+                      // deliberate rows (urgency / category / OK) instead of
+                      // letting flex-wrap break wherever it runs out of
+                      // room — same reasoning as the pre-redesign layout
+                      // (see git history), just carried over to the flat
+                      // system's border instead of a rounded card.
+                      <div className="mt-2 flex flex-col gap-3 border border-flat-divider-mid p-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
                         <div className="flex gap-2">
                           {TRIAGE_ORDER.map((u) => (
                             <button
                               key={u}
                               type="button"
                               onClick={() => setPendingUrgency(u)}
-                              className={`flex-1 rounded-full px-2 py-1.5 text-xs font-medium transition sm:flex-none sm:py-0.5 ${URGENCY_STYLES[u].pill} ${
-                                pendingUrgency === u
-                                  ? "ring-2 ring-offset-1 ring-sorted-ink/40"
-                                  : "ring-1 ring-inset ring-black/10 hover:ring-black/25"
+                              className={`flex-1 px-2.5 py-1.5 text-xs font-medium transition sm:flex-none ${
+                                pendingUrgency === u ? URGENCY_PICKER_SELECTED[u] : URGENCY_PICKER_UNSELECTED
                               }`}
                             >
-                              {URGENCY_STYLES[u].label}
+                              {u === "urgent" ? "Urgent" : u === "soon" ? "Next" : "Later"}
                             </button>
                           ))}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="shrink-0 text-xs text-sorted-ink-soft">Category:</span>
-                          <select
-                            value={pendingCategory}
-                            onChange={(e) => setPendingCategory(e.target.value as TaskType)}
-                            className={`min-w-0 flex-1 rounded-full border-none px-2 py-1.5 text-xs font-medium outline-none sm:flex-none sm:py-0.5 ${CATEGORY_STYLES[pendingCategory]}`}
-                          >
-                            {TASK_TYPES.map((t) => (
-                              <option key={t} value={t}>
-                                {TASK_TYPE_LABELS[t]}
-                              </option>
-                            ))}
-                          </select>
+                        <div className="flex flex-wrap gap-1.5">
+                          {TASK_TYPES.map((t) => (
+                            <button
+                              key={t}
+                              type="button"
+                              onClick={() => setPendingCategory(t)}
+                              className={`px-2.5 py-1 text-xs font-medium transition ${
+                                pendingCategory === t
+                                  ? "border border-flat-text bg-flat-text text-flat-bg"
+                                  : "border border-flat-divider-mid bg-transparent text-flat-text hover:border-flat-text"
+                              }`}
+                            >
+                              {TASK_TYPE_LABELS[t]}
+                            </button>
+                          ))}
                         </div>
                         <button
                           onClick={() => handleApply(task)}
-                          className="w-full shrink-0 rounded-full bg-sorted-primary py-2 text-xs font-medium text-white transition hover:bg-sorted-primary-dark sm:ml-auto sm:w-auto sm:px-3 sm:py-1"
+                          className="w-full shrink-0 bg-flat-accent py-2 text-xs font-semibold text-white transition hover:bg-flat-accent-700 sm:ml-auto sm:w-auto sm:px-4 sm:py-1.5"
                         >
                           OK
                         </button>

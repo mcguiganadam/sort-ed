@@ -74,36 +74,34 @@ export default function TodaySchedule() {
   }, [googleConnected]);
 
   return (
-    <div className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
-      <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-sorted-primary-dark">
-        Today&rsquo;s schedule
-      </h2>
+    <div>
+      <h2 className="text-sm font-bold uppercase tracking-wide">Today&rsquo;s schedule</h2>
 
       {!googleConnected ? (
         <>
-          <p className="mt-1 text-sm text-sorted-ink-soft">Connect Google Calendar to see today&rsquo;s agenda here.</p>
+          <p className="mt-2 text-sm opacity-70">Connect Google Calendar to see today&rsquo;s agenda here.</p>
           <button
             onClick={() => signIn("google")}
-            className="mt-3 rounded-full bg-sorted-primary px-3 py-1 text-sm font-medium text-white transition hover:bg-sorted-primary-dark"
+            className="mt-3 border border-flat-text px-3 py-1 text-sm font-medium transition hover:bg-flat-text hover:text-flat-bg"
           >
             Connect Google Calendar
           </button>
         </>
       ) : (
         <>
-          {loading && <p className="mt-2 text-xs text-sorted-ink-soft">Checking your calendar…</p>}
-          {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+          {loading && <p className="mt-2 text-xs opacity-70">Checking your calendar…</p>}
+          {error && <p className="mt-2 text-xs text-flat-urgent">{error}</p>}
           {!loading && !error && events && events.length === 0 && (
-            <p className="mt-2 text-sm text-sorted-ink-soft">Nothing on your calendar today.</p>
+            <p className="mt-2 text-sm opacity-70">Nothing on your calendar today.</p>
           )}
           {!loading && !error && events && events.length > 0 && (
-            <ul className="mt-3 space-y-1.5">
+            <ul className="mt-4 space-y-2.5">
               {events.map((e, i) => (
-                <li key={i} className="flex items-baseline gap-2 text-sm">
-                  <span className="shrink-0 whitespace-nowrap text-xs font-medium text-sorted-primary-dark">
+                <li key={i} className="flex items-baseline gap-2.5 text-sm">
+                  <span className="shrink-0 whitespace-nowrap font-semibold opacity-70">
                     {e.allDay || !e.start ? "All day" : formatTime(e.start)}
                   </span>
-                  <span className="min-w-0 truncate text-sorted-ink">{e.title}</span>
+                  <span className="min-w-0 truncate">{e.title}</span>
                 </li>
               ))}
             </ul>

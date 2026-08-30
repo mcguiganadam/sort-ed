@@ -36,20 +36,21 @@ export default function TaskCapture({ onSorted }: { onSorted: () => void }) {
   }
 
   return (
-    <form onSubmit={handleSort} className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
-      <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-sorted-primary-dark">
-        Quick capture
-      </h2>
-      <div className="mt-3 flex flex-wrap gap-2">
+    <form onSubmit={handleSort}>
+      <h2 className="text-sm font-bold uppercase tracking-wide">Quick capture</h2>
+      {/* Modernist redesign: category pills are monochrome (outline when
+          unselected, filled-dark when selected), not colour-coded — see
+          the note at the top of app/page.tsx. */}
+      <div className="mt-4 flex flex-wrap gap-2">
         {TASK_TYPES.map((t) => (
           <button
             type="button"
             key={t}
             onClick={() => setTaskType(t)}
-            className={`rounded-full px-3 py-1 text-sm font-medium transition ${
+            className={`px-3 py-1 text-sm font-medium transition ${
               taskType === t
-                ? "bg-sorted-primary text-white shadow-sm"
-                : "bg-sorted-primary-soft text-sorted-primary-dark hover:bg-sorted-primary-soft/70"
+                ? "border border-flat-text bg-flat-text text-flat-bg"
+                : "border border-flat-divider-mid bg-transparent text-flat-text hover:border-flat-text"
             }`}
           >
             {TASK_TYPE_LABELS[t]}
@@ -62,12 +63,12 @@ export default function TaskCapture({ onSorted }: { onSorted: () => void }) {
         placeholder="Initials + brief context — e.g. M.O. — lunchtime, playground"
         maxLength={140}
         autoFocus
-        className="mt-4 w-full rounded-lg border border-sorted-border bg-white px-3 py-2 text-sorted-ink outline-none transition focus:border-sorted-primary focus:ring-2 focus:ring-sorted-primary/15"
+        className="mt-4 w-full border border-flat-divider-mid bg-white px-3 py-2 text-flat-text outline-none transition focus:border-flat-accent"
       />
       <button
         type="submit"
-        className={`mt-3 w-full rounded-lg py-2 font-medium text-white transition disabled:opacity-40 ${
-          justSorted ? "bg-sorted-primary-dark" : "bg-sorted-primary hover:bg-sorted-primary-dark"
+        className={`mt-3 w-full py-2 font-semibold text-white transition disabled:opacity-40 ${
+          justSorted ? "bg-flat-accent-700" : "bg-flat-accent hover:bg-flat-accent-700"
         }`}
         disabled={!note.trim()}
       >

@@ -26,7 +26,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { sortTask, ignoreItem, listIgnoredRefs, listSortedRefs, TaskType } from "@/lib/db";
-import { TASK_TYPE_LABELS, CATEGORY_STYLES } from "@/lib/templates";
+import { TASK_TYPE_LABELS } from "@/lib/templates";
 import { Urgency } from "@/lib/heuristics";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import SlackComingSoon from "@/components/SlackComingSoon";
@@ -150,16 +150,14 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
   const anyConnected = googleConnected || slackConnected;
 
   return (
-    <div className="rounded-2xl border border-sorted-border bg-sorted-card p-5 shadow-card">
+    <div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-sorted-primary-dark">
-          Messages
-        </h2>
+        <h2 className="text-sm font-bold uppercase tracking-wide">Messages</h2>
         {anyConnected && (
           <button
             onClick={scan}
             disabled={loading}
-            className="text-xs font-medium text-sorted-primary underline decoration-dotted hover:text-sorted-primary-dark"
+            className="text-xs font-medium underline decoration-dotted hover:opacity-70"
           >
             {loading ? "Scanning…" : "Scan recent activity"}
           </button>
@@ -170,16 +168,16 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
           (app/privacy/page.tsx "What SortEd reads, if you connect it"), so
           this just needs to reassure at a glance and link out for anyone
           who wants the detail. */}
-      <p className="mt-1 text-xs text-sorted-ink-soft">
+      <p className="mt-1 text-xs opacity-55">
         Read-only, never stored —{" "}
-        <Link href="/privacy" className="underline decoration-dotted underline-offset-2 hover:text-sorted-ink">
+        <Link href="/privacy" className="underline decoration-dotted underline-offset-2 hover:opacity-70">
           how this works
         </Link>
         .
       </p>
 
       {!anyConnected && (
-        <div className="mt-4 rounded-xl border border-dashed border-sorted-border p-4 text-sm text-sorted-primary-dark">
+        <div className="mt-4 border border-dashed border-flat-divider p-4 text-sm">
           <p className="mb-2">Connect Gmail — nothing is read until you sign in.</p>
           <div className="flex flex-wrap items-center gap-2">
             <GoogleSignInButton />
@@ -196,79 +194,61 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
               right now, so a "Connect Slack too" prompt here would never
               go away even after Gmail was connected. */}
           {!googleConnected && (
-            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg bg-sorted-bg px-3 py-2 text-xs text-sorted-ink-soft">
+            <div className="mt-3 flex flex-wrap items-center gap-2 border border-flat-divider-soft px-3 py-2 text-xs opacity-80">
               <span>Connect Gmail too to see it in this feed:</span>
               <GoogleSignInButton />
             </div>
           )}
 
           {errors.map((e) => (
-            <p key={e} className="mt-2 text-xs text-red-600">
+            <p key={e} className="mt-2 text-xs text-flat-urgent">
               {e}
             </p>
           ))}
 
           {items && visibleItems.length === 0 && errors.length === 0 && (
-            <p className="mt-3 text-xs text-sorted-ink-soft">Nothing that looks sortable right now.</p>
+            <p className="mt-3 text-xs opacity-60">Nothing that looks sortable right now.</p>
           )}
 
-          <ul className="mt-3 space-y-2">
+          {/* Modernist redesign: rows sit directly on the page background,
+              separated by 1px hairlines (via divide-y) rather than each
+              getting its own tinted background — consistent with the
+              flat, no-card system elsewhere on this page. */}
+          <ul className="mt-4 divide-y divide-flat-divider-soft">
             {visibleItems.map((item) => {
               const key = itemKey(item);
 
               return (
-                <li key={key} className="overflow-hidden rounded-lg bg-sorted-bg px-3 py-2 text-sm">
-                  {/* Deliberately ONE flat flex row, no nesting and no flex-wrap: the
-                      previous version nested a "flex min-w-0" group inside a
-                      "flex flex-wrap justify-between" parent, and flex-wrap's
-                      line-breaking decision is based on each item's *hypothetical*
-                      (un-shrunk) content width — which for a nowrap text node is
-                      its full, un-truncated width regardless of min-w-0 further
-                      down. That's what let a long subject line force the row to
-                      overflow/wrap instead of eliding. With everything as direct
-                      siblings of one non-wrapping flex container, the summary
-                      span is the only flexible (flex-1 min-w-0) item, so it's the
-                      only one that can absorb a too-narrow row, and the fixed-size
-                      badges sit wherever their shrink-0 width puts them. */}
+                <li key={key} className="py-3 text-sm first:pt-0">
                   <div className="flex items-center gap-2">
-                    <span className="shrink-0 whitespace-nowrap text-[10px] font-medium uppercase tracking-wide text-sorted-ink-soft">
+                    <span className="shrink-0 whitespace-nowrap text-[10px] font-medium uppercase tracking-wide opacity-55">
                       {SOURCE_LABEL[item.source]}
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-sorted-ink">
+                    <span className="min-w-0 flex-1 truncate">
                       <strong>{item.from}</strong> — {item.snippet}
                     </span>
                     {item.suggestedType && (
-                      <span
-                        className={`shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-xs ${CATEGORY_STYLES[item.suggestedType]}`}
-                      >
+                      <span className="shrink-0 whitespace-nowrap border border-flat-divider-soft px-2 py-0.5 text-xs">
                         {TASK_TYPE_LABELS[item.suggestedType]}
                       </span>
                     )}
+                    <span className="shrink-0 whitespace-nowrap text-xs opacity-45">{timeAgo(item.timestamp)}</span>
                   </div>
-                  {/* -my-1 py-1 px-1.5 -mx-1.5: bigger tap targets for touch,
-                      offset by negative margins so the row's spacing and height
-                      look exactly as before. */}
-                  <div className="mt-2 flex items-center gap-3 text-xs">
+                  <div className="mt-2 flex items-center gap-4 text-xs">
                     <button
                       onClick={() => handleSort(item)}
                       disabled={!item.suggestedType}
-                      className="-mx-1.5 -my-1 rounded px-1.5 py-1 font-medium text-sorted-primary hover:underline disabled:cursor-not-allowed disabled:text-sorted-ink-soft/50 disabled:no-underline"
+                      className="font-medium underline decoration-dotted hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-30 disabled:no-underline"
                     >
                       Sort it
                     </button>
                     <button
                       onClick={() => handleIgnore(item)}
-                      className="-my-1 rounded px-1.5 py-1 font-medium text-sorted-ink-soft hover:text-sorted-ink hover:underline"
+                      className="font-medium opacity-70 underline decoration-dotted hover:opacity-100"
                     >
                       Ignore
                     </button>
-                    <span className="ml-auto text-sorted-ink-soft/70">{timeAgo(item.timestamp)}</span>
                   </div>
-                  {!item.suggestedType && (
-                    <p className="mt-1 text-[11px] text-sorted-ink-soft/70">
-                      No category recognised — Ignore it, or add it via Quick capture instead.
-                    </p>
-                  )}
                 </li>
               );
             })}
