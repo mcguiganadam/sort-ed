@@ -71,6 +71,25 @@ export default function Home() {
         <KofiButton />
       </header>
 
+      {/* Adam: "we need to somehow warn users that closing tabs, browsers
+          etc mean data is lost (or we fix that somehow)." Tested this
+          directly first rather than guessing: added a task, fully closed
+          and reopened the browser against the same sort-ed.org origin —
+          it was still there, because IndexedDB isn't tied to a tab or even
+          a browser window, only to this browser's storage for this site.
+          The two ways it genuinely doesn't survive (confirmed with Adam
+          as what he'd actually seen) are a private/incognito window,
+          which most browsers wipe on close by design, and switching to a
+          different browser or device, since there's no server to sync
+          from. Framed as reassurance rather than a warning, per this
+          project's "reduce stress, don't invoke it" copy principle
+          (sorted-handoff-20260828.md) — "nothing is lost" is the
+          differentiated pitch here, not a caveat to bury. */}
+      <p className="mt-4 text-sm text-sorted-ink-soft">
+        Saved right here on this device — closing and reopening this tab keeps everything. A
+        private/incognito window or a different browser or device starts fresh.
+      </p>
+
       {/* rounded-full works as a single-line status pill on desktop, but at
           phone width this row's content (sign-in buttons, or "Signed in
           as..." + Sign out) wraps onto two lines — inside a stadium-radius
