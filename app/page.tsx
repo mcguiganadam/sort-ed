@@ -7,6 +7,7 @@ import TaskCapture from "@/components/TaskCapture";
 import SortedList from "@/components/SortedList";
 import AutoDetectPanel from "@/components/AutoDetectPanel";
 import TodaySchedule from "@/components/TodaySchedule";
+import Link from "next/link";
 import KofiButton from "@/components/KofiButton";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import SlackComingSoon from "@/components/SlackComingSoon";
@@ -108,13 +109,22 @@ export default function Home() {
           <p className="max-w-md">
             Everything above stays private — nothing is stored on a server, ever.
           </p>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             <a
               href="mailto:sorted.help@proton.me"
               className="underline decoration-dotted underline-offset-2 hover:text-sorted-ink"
             >
               Contact
             </a>
+            {/* Was just an inline claim ("nothing is stored on a server, ever")
+                with nothing to click through to. Now links to a real policy
+                page (app/privacy/page.tsx) — both because teachers deserve
+                more than a one-line promise, and because a linked, public
+                privacy policy is a prerequisite for Google's OAuth
+                verification on the Gmail/Calendar scopes. */}
+            <Link href="/privacy" className="underline decoration-dotted underline-offset-2 hover:text-sorted-ink">
+              Privacy Policy
+            </Link>
             <button onClick={handleExport} className="underline decoration-dotted underline-offset-2 hover:text-sorted-ink">
               Export my data
             </button>
