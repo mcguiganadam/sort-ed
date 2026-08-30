@@ -96,26 +96,9 @@ export default function Home() {
         <p>Capture and sort them for later, so you can focus on teaching.</p>
       </div>
 
-      <ol className="mt-6 grid gap-3 sm:grid-cols-3">
-        {[
-          { n: 1, label: "Capture", detail: "Jot it down in five seconds" },
-          { n: 2, label: "Sort", detail: "Urgent, next, or later" },
-          { n: 3, label: "Handle it later", detail: "One batch, not mid-lesson" },
-        ].map((step) => (
-          <li
-            key={step.n}
-            className="flex items-start gap-3 rounded-xl border border-sorted-border bg-sorted-card px-4 py-3"
-          >
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sorted-primary-soft text-xs font-semibold text-sorted-primary-dark">
-              {step.n}
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-sorted-ink">{step.label}</p>
-              <p className="text-xs text-sorted-ink-soft">{step.detail}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
+      {/* "How it works" 3-step strip (Capture/Sort/Handle it later) hidden
+          for now, Aug 30 -- Adam wants to revisit the wording before it
+          goes back in. Not deleted from history: see commit 2bf68fe. */}
 
       {/* rounded-full works as a single-line status pill on desktop, but at
           phone width this row's content (sign-in buttons, or "Signed in
@@ -168,8 +151,8 @@ export default function Home() {
           (sorted-handoff-20260828.md) — "nothing is lost" is the
           differentiated pitch here, not a caveat to bury. */}
       <p className="mt-6 text-sm text-sorted-ink-soft">
-        Saved right here on this device — closing and reopening this tab keeps everything. A
-        private/incognito window or a different browser or device starts fresh.
+        Saved right here on this device. Closing and reopening this tab keeps everything. A
+        private/incognito window, a different browser, or device starts fresh.
       </p>
 
       <footer className="mt-12 border-t border-sorted-border pt-6 text-xs text-sorted-ink-soft">
