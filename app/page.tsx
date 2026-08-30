@@ -93,7 +93,7 @@ export default function Home() {
       </div>
 
       {/* Hero */}
-      <div className="border-b-2 border-flat-divider px-6 py-10 sm:px-12 sm:py-14 lg:px-20 lg:py-20 xl:px-24">
+      <div className="border-b-2 border-flat-divider px-6 pt-4 pb-6 sm:px-12 sm:pt-6 sm:pb-8 lg:px-20 lg:pt-8 lg:pb-10 xl:px-24">
         <h1 className="font-modernist text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-[56px]">
           Teaching comes first.
         </h1>
@@ -167,7 +167,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 px-6 py-8 sm:px-12 sm:py-10 lg:px-20 lg:py-12 xl:px-24">
+      <div className="flex flex-col gap-4 px-6 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
         <SortedList tasks={tasks} onChanged={refresh} />
         <p className="text-sm opacity-60">
           Saved right here on this device. Closing and reopening this tab keeps everything. A
