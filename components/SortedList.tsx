@@ -178,42 +178,55 @@ export default function SortedList({
                     </div>
 
                     {isEditing && (
-                      // Mobile formatting: below sm, this stacks into three
-                      // deliberate rows (urgency / category / OK) instead of
-                      // letting flex-wrap break wherever it runs out of
-                      // room — same reasoning as the pre-redesign layout
-                      // (see git history), just carried over to the flat
-                      // system's border instead of a rounded card.
-                      <div className="mt-2 flex flex-col gap-3 border border-flat-divider-mid p-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-                        <div className="flex gap-2">
-                          {TRIAGE_ORDER.map((u) => (
-                            <button
-                              key={u}
-                              type="button"
-                              onClick={() => setPendingUrgency(u)}
-                              className={`flex-1 px-2.5 py-1.5 text-xs font-medium transition sm:flex-none ${
-                                pendingUrgency === u ? URGENCY_PICKER_SELECTED[u] : URGENCY_PICKER_UNSELECTED
-                              }`}
-                            >
-                              {u === "urgent" ? "Urgent" : u === "soon" ? "Next" : "Later"}
-                            </button>
-                          ))}
+                      // Split into two clearly labeled groups (urgency,
+                      // then category) stacked on their own rows, always --
+                      // not just on mobile. Adam: with all three urgency
+                      // buttons and all nine category buttons flowing into
+                      // one row on wider screens, it read as ~13 choices
+                      // thrown at the user at once ("this amount of choice
+                      // will confuse and overwhelm"). The buttons
+                      // themselves didn't change, just the grouping: two
+                      // small labeled decisions instead of one big wall.
+                      <div className="mt-2 flex flex-col gap-3 border border-flat-divider-mid p-3">
+                        <div>
+                          <span className="mb-1.5 block text-[11px] uppercase tracking-wide opacity-50">
+                            Urgency
+                          </span>
+                          <div className="flex gap-2">
+                            {TRIAGE_ORDER.map((u) => (
+                              <button
+                                key={u}
+                                type="button"
+                                onClick={() => setPendingUrgency(u)}
+                                className={`flex-1 px-2.5 py-1.5 text-xs font-medium transition sm:flex-none ${
+                                  pendingUrgency === u ? URGENCY_PICKER_SELECTED[u] : URGENCY_PICKER_UNSELECTED
+                                }`}
+                              >
+                                {u === "urgent" ? "Urgent" : u === "soon" ? "Next" : "Later"}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {TASK_TYPES.map((t) => (
-                            <button
-                              key={t}
-                              type="button"
-                              onClick={() => setPendingCategory(t)}
-                              className={`px-2.5 py-1 text-xs font-medium transition ${
-                                pendingCategory === t
-                                  ? "border border-flat-text bg-flat-text text-flat-bg"
-                                  : "border border-flat-divider-mid bg-transparent text-flat-text hover:border-flat-text"
-                              }`}
-                            >
-                              {TASK_TYPE_LABELS[t]}
-                            </button>
-                          ))}
+                        <div>
+                          <span className="mb-1.5 block text-[11px] uppercase tracking-wide opacity-50">
+                            Category
+                          </span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {TASK_TYPES.map((t) => (
+                              <button
+                                key={t}
+                                type="button"
+                                onClick={() => setPendingCategory(t)}
+                                className={`px-2.5 py-1 text-xs font-medium transition ${
+                                  pendingCategory === t
+                                    ? "border border-flat-text bg-flat-text text-flat-bg"
+                                    : "border border-flat-divider-mid bg-transparent text-flat-text hover:border-flat-text"
+                                }`}
+                              >
+                                {TASK_TYPE_LABELS[t]}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                         <button
                           onClick={() => handleApply(task)}
