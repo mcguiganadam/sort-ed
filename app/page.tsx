@@ -167,7 +167,8 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 px-6 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
+      <div className="border-t-2 border-flat-divider flex flex-col gap-4 px-6 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
+        <h2 className="text-sm font-bold uppercase tracking-wide">Sorted</h2>
         <SortedList tasks={tasks} onChanged={refresh} />
         <p className="text-sm opacity-60">
           Saved right here on this device. Closing and reopening this tab keeps everything. A
