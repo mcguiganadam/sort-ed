@@ -77,8 +77,15 @@ export default function Home() {
           two short beats (what piles up / what it's for) then the payoff.
           This is a first pass, not the full landing/first-impression
           treatment still on the checklist — that pass should revisit this
-          copy too, not just add around it. */}
-      <div className="mt-3 max-w-2xl space-y-1 text-base text-sorted-ink-soft">
+          copy too, not just add around it.
+          No max-w here (Adam: "balance is off") — capping this block at
+          max-w-2xl while the header above it (SortEd + the Ko-fi button)
+          and every card below it run the container's full width left a
+          lopsided gap on the right, under the Ko-fi button, that nothing
+          else on the page has. Letting it wrap at the same full width as
+          everything else lines its right edge up with the rest of the
+          page instead of stopping short. */}
+      <div className="mt-3 space-y-1 text-base text-sorted-ink-soft">
         <p>
           For all the messages and admin stuff that eventually piles up and overwhelms you. For
           the thoughts that you don&rsquo;t want to lose.
