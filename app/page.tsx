@@ -72,18 +72,19 @@ export default function Home() {
       </header>
 
       {/* Adam: "I want to use that space to explain the purpose of SortEd" —
-          the one-line pitch a cold visitor (Reddit, a shared link) needs
-          before deciding whether to sign in at all. Names the actual
-          Quick Capture categories' spirit (parent/behaviour/leadership)
-          and the actual mechanism (capture → Urgent/Next/Later) rather
-          than staying abstract. This is a first pass, not the full
-          landing/first-impression treatment still on the checklist —
-          that pass should revisit this line too, not just add around it. */}
-      <p className="mt-3 max-w-2xl text-base text-sorted-ink-soft">
-        For the parent email, the behaviour note, the leadership ask — the stuff that lands
-        mid-lesson and doesn&rsquo;t need handling right now. Capture it in five seconds, sort it
-        into Urgent, Next, or Later, and get back to teaching.
-      </p>
+          the pitch a cold visitor (Reddit, a shared link) needs before
+          deciding whether to sign in at all. Adam's own wording, verbatim —
+          two short beats (what piles up / what it's for) then the payoff.
+          This is a first pass, not the full landing/first-impression
+          treatment still on the checklist — that pass should revisit this
+          copy too, not just add around it. */}
+      <div className="mt-3 max-w-2xl space-y-1 text-base text-sorted-ink-soft">
+        <p>
+          For all the messages and admin stuff that eventually piles up and overwhelms you. For
+          the thoughts that you don&rsquo;t want to lose.
+        </p>
+        <p>Capture and sort them for later, so you can focus on teaching and learning now.</p>
+      </div>
 
       {/* rounded-full works as a single-line status pill on desktop, but at
           phone width this row's content (sign-in buttons, or "Signed in
