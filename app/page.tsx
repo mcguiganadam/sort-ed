@@ -71,23 +71,18 @@ export default function Home() {
         <KofiButton />
       </header>
 
-      {/* Adam: "we need to somehow warn users that closing tabs, browsers
-          etc mean data is lost (or we fix that somehow)." Tested this
-          directly first rather than guessing: added a task, fully closed
-          and reopened the browser against the same sort-ed.org origin —
-          it was still there, because IndexedDB isn't tied to a tab or even
-          a browser window, only to this browser's storage for this site.
-          The two ways it genuinely doesn't survive (confirmed with Adam
-          as what he'd actually seen) are a private/incognito window,
-          which most browsers wipe on close by design, and switching to a
-          different browser or device, since there's no server to sync
-          from. Framed as reassurance rather than a warning, per this
-          project's "reduce stress, don't invoke it" copy principle
-          (sorted-handoff-20260828.md) — "nothing is lost" is the
-          differentiated pitch here, not a caveat to bury. */}
-      <p className="mt-4 text-sm text-sorted-ink-soft">
-        Saved right here on this device — closing and reopening this tab keeps everything. A
-        private/incognito window or a different browser or device starts fresh.
+      {/* Adam: "I want to use that space to explain the purpose of SortEd" —
+          the one-line pitch a cold visitor (Reddit, a shared link) needs
+          before deciding whether to sign in at all. Names the actual
+          Quick Capture categories' spirit (parent/behaviour/leadership)
+          and the actual mechanism (capture → Urgent/Next/Later) rather
+          than staying abstract. This is a first pass, not the full
+          landing/first-impression treatment still on the checklist —
+          that pass should revisit this line too, not just add around it. */}
+      <p className="mt-3 max-w-2xl text-base text-sorted-ink-soft">
+        For the parent email, the behaviour note, the leadership ask — the stuff that lands
+        mid-lesson and doesn&rsquo;t need handling right now. Capture it in five seconds, sort it
+        into Urgent, Next, or Later, and get back to teaching.
       </p>
 
       {/* rounded-full works as a single-line status pill on desktop, but at
@@ -122,6 +117,28 @@ export default function Home() {
         <AutoDetectPanel onSorted={refresh} />
         <SortedList tasks={tasks} onChanged={refresh} />
       </div>
+
+      {/* Moved down from under the header (Adam wanted that space for the
+          purpose line above instead) — still reads fine here, right under
+          the sort boxes it's actually describing. Adam: "we need to
+          somehow warn users that closing tabs, browsers etc mean data is
+          lost (or we fix that somehow)." Tested this directly first rather
+          than guessing: added a task, fully closed and reopened the
+          browser against the same sort-ed.org origin — it was still
+          there, because IndexedDB isn't tied to a tab or even a browser
+          window, only to this browser's storage for this site. The two
+          ways it genuinely doesn't survive (confirmed with Adam as what
+          he'd actually seen) are a private/incognito window, which most
+          browsers wipe on close by design, and switching to a different
+          browser or device, since there's no server to sync from. Framed
+          as reassurance rather than a warning, per this project's "reduce
+          stress, don't invoke it" copy principle
+          (sorted-handoff-20260828.md) — "nothing is lost" is the
+          differentiated pitch here, not a caveat to bury. */}
+      <p className="mt-6 text-sm text-sorted-ink-soft">
+        Saved right here on this device — closing and reopening this tab keeps everything. A
+        private/incognito window or a different browser or device starts fresh.
+      </p>
 
       <footer className="mt-12 border-t border-sorted-border pt-6 text-xs text-sorted-ink-soft">
         <div className="flex flex-wrap items-center justify-between gap-3">
