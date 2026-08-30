@@ -1,6 +1,6 @@
 # SortEd
 
-Consider it sorted.
+Teaching comes first.
 
 A quick-capture tool that protects teachers' planning time by moving
 admin work (behaviour notes, parent replies, leader updates, meeting prep,

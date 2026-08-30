@@ -21,7 +21,7 @@ const bodyFont = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SortEd — consider it sorted",
+  title: "SortEd — teaching comes first",
   description: "Quick capture that keeps admin out of your planning block, sorted for a clear moment instead.",
   // Favicon comes from app/icon.svg via Next's file-based metadata
   // convention — no manual <link> needed here.
