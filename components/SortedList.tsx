@@ -211,21 +211,35 @@ export default function SortedList({
                           <span className="mb-1.5 block text-[11px] uppercase tracking-wide opacity-50">
                             Category
                           </span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {TASK_TYPES.map((t) => (
-                              <button
-                                key={t}
-                                type="button"
-                                onClick={() => setPendingCategory(t)}
-                                className={`px-2.5 py-1 text-xs font-medium transition ${
-                                  pendingCategory === t
-                                    ? "border border-flat-text bg-flat-text text-flat-bg"
-                                    : "border border-flat-divider-mid bg-transparent text-flat-text hover:border-flat-text"
-                                }`}
-                              >
-                                {TASK_TYPE_LABELS[t]}
-                              </button>
-                            ))}
+                          {/* Dropdown instead of a 9-button row -- Adam:
+                              even split out under its own label, nine
+                              buttons alongside the three urgency buttons
+                              still read as too many choices at once. A
+                              select collapses it to one compact control;
+                              urgency stays as buttons since there are only
+                              three and their colors match the group boxes
+                              elsewhere on the page. */}
+                          <div className="relative w-full max-w-[220px]">
+                            <select
+                              value={pendingCategory}
+                              onChange={(e) => setPendingCategory(e.target.value as TaskType)}
+                              className="w-full appearance-none rounded-none border border-flat-divider-mid bg-white px-2.5 py-1.5 pr-8 text-xs font-medium text-flat-text transition focus:border-flat-accent focus:outline-none"
+                            >
+                              {TASK_TYPES.map((t) => (
+                                <option key={t} value={t}>
+                                  {TASK_TYPE_LABELS[t]}
+                                </option>
+                              ))}
+                            </select>
+                            <svg
+                              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"
+                              width="10"
+                              height="6"
+                              viewBox="0 0 10 6"
+                              aria-hidden="true"
+                            >
+                              <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
                           </div>
                         </div>
                         <button
