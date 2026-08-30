@@ -187,7 +187,7 @@ export const TASK_TYPE_LABELS: Record<TaskType, string> = {
 // so a "Pastoral" pill looks like the same thing in both places.
 export const CATEGORY_STYLES: Record<TaskType, string> = {
   pastoral: "bg-rose-50 text-rose-700",
-  inclusion: "bg-purple-50 text-purple-700",
+  inclusion: "bg-fuchsia-50 text-fuchsia-700",
   parent: "bg-sky-50 text-sky-700",
   leadership: "bg-amber-50 text-amber-700",
   admin: "bg-slate-100 text-slate-700",
