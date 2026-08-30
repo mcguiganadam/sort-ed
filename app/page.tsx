@@ -99,7 +99,7 @@ export default function Home() {
         </h1>
         <div className="mt-6 text-base opacity-80 sm:text-lg">
           <p>
-            For all the messages and admin stuff that pile up. For the thoughts that you
+            For all the messages and admin stuff that piles up. For the thoughts that you
             don&rsquo;t want to lose.
             <br className="hidden sm:inline" /> Sort them for later, so you can focus on teaching
             now.
