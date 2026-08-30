@@ -188,58 +188,65 @@ export default function SortedList({
                       // themselves didn't change, just the grouping: two
                       // small labeled decisions instead of one big wall.
                       <div className="mt-2 flex flex-col gap-3 border border-flat-divider-mid p-3">
-                        <div>
-                          <span className="mb-1.5 block text-[11px] uppercase tracking-wide opacity-50">
-                            Urgency
-                          </span>
-                          <div className="flex gap-2">
-                            {TRIAGE_ORDER.map((u) => (
-                              <button
-                                key={u}
-                                type="button"
-                                onClick={() => setPendingUrgency(u)}
-                                className={`flex-1 px-2.5 py-1.5 text-xs font-medium transition sm:flex-none ${
-                                  pendingUrgency === u ? URGENCY_PICKER_SELECTED[u] : URGENCY_PICKER_UNSELECTED
-                                }`}
-                              >
-                                {u === "urgent" ? "Urgent" : u === "soon" ? "Next" : "Later"}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        <div>
-                          <span className="mb-1.5 block text-[11px] uppercase tracking-wide opacity-50">
-                            Category
-                          </span>
-                          {/* Dropdown instead of a 9-button row -- Adam:
-                              even split out under its own label, nine
-                              buttons alongside the three urgency buttons
-                              still read as too many choices at once. A
-                              select collapses it to one compact control;
-                              urgency stays as buttons since there are only
-                              three and their colors match the group boxes
-                              elsewhere on the page. */}
-                          <div className="relative w-full max-w-[220px]">
-                            <select
-                              value={pendingCategory}
-                              onChange={(e) => setPendingCategory(e.target.value as TaskType)}
-                              className="w-full appearance-none rounded-none border border-flat-divider-mid bg-white px-2.5 py-1.5 pr-8 text-xs font-medium text-flat-text transition focus:border-flat-accent focus:outline-none"
-                            >
-                              {TASK_TYPES.map((t) => (
-                                <option key={t} value={t}>
-                                  {TASK_TYPE_LABELS[t]}
-                                </option>
+                        {/* Urgency and Category side by side (wraps to
+                            stacked on narrow screens) -- Adam asked for
+                            the category dropdown to sit to the right of
+                            the urgency buttons instead of on its own row
+                            below. */}
+                        <div className="flex flex-wrap items-start gap-4">
+                          <div>
+                            <span className="mb-1.5 block text-[11px] uppercase tracking-wide opacity-50">
+                              Urgency
+                            </span>
+                            <div className="flex gap-2">
+                              {TRIAGE_ORDER.map((u) => (
+                                <button
+                                  key={u}
+                                  type="button"
+                                  onClick={() => setPendingUrgency(u)}
+                                  className={`flex-1 px-2.5 py-1.5 text-xs font-medium transition sm:flex-none ${
+                                    pendingUrgency === u ? URGENCY_PICKER_SELECTED[u] : URGENCY_PICKER_UNSELECTED
+                                  }`}
+                                >
+                                  {u === "urgent" ? "Urgent" : u === "soon" ? "Next" : "Later"}
+                                </button>
                               ))}
-                            </select>
-                            <svg
-                              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"
-                              width="10"
-                              height="6"
-                              viewBox="0 0 10 6"
-                              aria-hidden="true"
-                            >
-                              <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
+                            </div>
+                          </div>
+                          <div>
+                            <span className="mb-1.5 block text-[11px] uppercase tracking-wide opacity-50">
+                              Category
+                            </span>
+                            {/* Dropdown instead of a 9-button row -- Adam:
+                                even split out under its own label, nine
+                                buttons alongside the three urgency buttons
+                                still read as too many choices at once. A
+                                select collapses it to one compact control;
+                                urgency stays as buttons since there are only
+                                three and their colors match the group boxes
+                                elsewhere on the page. */}
+                            <div className="relative w-full max-w-[220px]">
+                              <select
+                                value={pendingCategory}
+                                onChange={(e) => setPendingCategory(e.target.value as TaskType)}
+                                className="w-full appearance-none rounded-none border border-flat-divider-mid bg-white px-2.5 py-1.5 pr-8 text-xs font-medium text-flat-text transition focus:border-flat-accent focus:outline-none"
+                              >
+                                {TASK_TYPES.map((t) => (
+                                  <option key={t} value={t}>
+                                    {TASK_TYPE_LABELS[t]}
+                                  </option>
+                                ))}
+                              </select>
+                              <svg
+                                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"
+                                width="10"
+                                height="6"
+                                viewBox="0 0 10 6"
+                                aria-hidden="true"
+                              >
+                                <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            </div>
                           </div>
                         </div>
                         <button
