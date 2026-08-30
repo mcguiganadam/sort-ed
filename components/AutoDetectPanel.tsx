@@ -23,6 +23,7 @@
 // summarisation is worth revisiting later with a different approach.
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { sortTask, ignoreItem, listIgnoredRefs, listSortedRefs, TaskType } from "@/lib/db";
 import { TASK_TYPE_LABELS, CATEGORY_STYLES } from "@/lib/templates";
@@ -164,10 +165,17 @@ export default function AutoDetectPanel({ onSorted }: { onSorted: () => void }) 
           </button>
         )}
       </div>
+      {/* Trimmed from a three-sentence paragraph (Adam: "too long") to one
+          line — the full explanation now lives on the Privacy Policy page
+          (app/privacy/page.tsx "What SortEd reads, if you connect it"), so
+          this just needs to reassure at a glance and link out for anyone
+          who wants the detail. */}
       <p className="mt-1 text-xs text-sorted-ink-soft">
-        Read-only, and summarised entirely on this request — nothing scanned here is stored, and
-        no message content is sent anywhere by default. It's only ever held in this browser tab
-        while you decide what to sort.
+        Read-only, never stored —{" "}
+        <Link href="/privacy" className="underline decoration-dotted underline-offset-2 hover:text-sorted-ink">
+          how this works
+        </Link>
+        .
       </p>
 
       {!anyConnected && (
