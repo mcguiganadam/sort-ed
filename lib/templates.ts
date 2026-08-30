@@ -194,5 +194,5 @@ export const CATEGORY_STYLES: Record<TaskType, string> = {
   planning: "bg-indigo-50 text-indigo-700",
   assessment: "bg-teal-50 text-teal-700",
   ideas: "bg-lime-50 text-lime-700",
-  pd: "bg-cyan-50 text-cyan-700",
+  pd: "bg-green-50 text-green-700",
 };

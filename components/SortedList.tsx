@@ -165,7 +165,9 @@ export default function SortedList({
                               type="button"
                               onClick={() => setPendingUrgency(u)}
                               className={`flex-1 rounded-full px-2 py-1.5 text-xs font-medium transition sm:flex-none sm:py-0.5 ${URGENCY_STYLES[u].pill} ${
-                                pendingUrgency === u ? "ring-2 ring-offset-1 ring-sorted-ink/40" : "opacity-50 hover:opacity-100"
+                                pendingUrgency === u
+                                  ? "ring-2 ring-offset-1 ring-sorted-ink/40"
+                                  : "ring-1 ring-inset ring-black/10 hover:ring-black/25"
                               }`}
                             >
                               {URGENCY_STYLES[u].label}
