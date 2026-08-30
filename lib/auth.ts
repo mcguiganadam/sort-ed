@@ -58,6 +58,19 @@ async function previousSessionToken(): Promise<Record<string, any> | null> {
 // calendar.events (write). Drafting replies happens client-side via a
 // mailto: link the teacher reviews and sends themselves — SortEd never
 // gets send access to anyone's account.
+//
+// Considered narrowing this to gmail.metadata (app/api/gmail/scan never
+// requests a full message body — see that file) but Gmail's own docs are
+// explicit that the `q` search parameter "cannot be used when accessing
+// the api using the gmail.metadata scope", and the scan's messages.list
+// call relies on `q=newer_than:2d in:inbox` to avoid pulling the whole
+// inbox. Switching scopes would mean listing far more messages per scan
+// and filtering by date client-side instead — a real behaviour change,
+// not a drop-in swap — so this stays gmail.readonly for now. Both scopes
+// are classified as "restricted" by Google regardless (same OAuth
+// verification requirements either way), so there's no verification-tier
+// upside to forcing this through today; worth revisiting if the scan ever
+// stops needing server-side date filtering.
 const GOOGLE_SCOPES = [
   "openid",
   "email",
