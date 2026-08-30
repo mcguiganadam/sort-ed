@@ -64,9 +64,12 @@ export default function Home() {
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Mark />
-          <h1 className="font-display text-2xl font-bold leading-tight text-sorted-primary-dark">
-            SortEd
-          </h1>
+          <div>
+            <h1 className="font-display text-2xl font-bold leading-tight text-sorted-primary-dark">
+              SortEd
+            </h1>
+            <p className="text-sm text-sorted-ink-soft">Consider it sorted.</p>
+          </div>
         </div>
         <KofiButton />
       </header>
@@ -92,6 +95,27 @@ export default function Home() {
         </p>
         <p>Capture and sort them for later, so you can focus on teaching.</p>
       </div>
+
+      <ol className="mt-6 grid gap-3 sm:grid-cols-3">
+        {[
+          { n: 1, label: "Capture", detail: "Jot it down in five seconds" },
+          { n: 2, label: "Sort", detail: "Urgent, next, or later" },
+          { n: 3, label: "Handle it later", detail: "One batch, not mid-lesson" },
+        ].map((step) => (
+          <li
+            key={step.n}
+            className="flex items-start gap-3 rounded-xl border border-sorted-border bg-sorted-card px-4 py-3"
+          >
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sorted-primary-soft text-xs font-semibold text-sorted-primary-dark">
+              {step.n}
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-sorted-ink">{step.label}</p>
+              <p className="text-xs text-sorted-ink-soft">{step.detail}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
 
       {/* rounded-full works as a single-line status pill on desktop, but at
           phone width this row's content (sign-in buttons, or "Signed in
