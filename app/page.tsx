@@ -126,7 +126,19 @@ export default function Home() {
         )}
       </div>
 
-      <div className="mt-8 grid gap-5">
+      {/* min-w-0 on every direct child: grid items default to
+          min-width:auto, so a flex-wrap row inside any one card (e.g.
+          Quick Capture's category pills) contributes its UNWRAPPED
+          max-content width to this grid's track sizing -- confirmed via
+          getBoundingClientRect/scrollWidth measurement at 375px: the
+          track computed 412px against a 343px available width, clipping
+          pills, the input placeholder, the Category select, and Edit/Done
+          off the right edge on every phone-width visit, invisibly (no
+          scrollbar) because of the overflow-x:hidden safeguard in
+          globals.css. min-w-0 lets each card shrink to the grid's actual
+          available width instead of stretching it; flex-wrap inside each
+          card then wraps correctly once given that real width. */}
+      <div className="mt-8 grid gap-5 [&>*]:min-w-0">
         <TaskCapture onSorted={refresh} />
         <TodaySchedule />
         <AutoDetectPanel onSorted={refresh} />
