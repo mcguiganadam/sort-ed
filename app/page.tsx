@@ -68,7 +68,7 @@ export default function Home() {
             <h1 className="font-display text-2xl font-bold leading-tight text-sorted-primary-dark">
               SortEd
             </h1>
-            <p className="text-sm text-sorted-ink-soft">Consider it sorted.</p>
+            <p className="text-sm text-sorted-ink-soft">Teaching comes first.</p>
           </div>
         </div>
         <KofiButton />
