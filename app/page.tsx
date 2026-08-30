@@ -87,10 +87,10 @@ export default function Home() {
           page instead of stopping short. */}
       <div className="mt-3 space-y-1 text-base text-sorted-ink-soft">
         <p>
-          For all the messages and admin stuff that eventually piles up and overwhelms you. For
-          the thoughts that you don&rsquo;t want to lose.
+          For all the messages and admin stuff that piles up and overwhelms. For the thoughts
+          that you don&rsquo;t want to lose.
         </p>
-        <p>Capture and sort them for later, so you can focus on teaching and learning now.</p>
+        <p>Capture and sort them for later, so you can focus on teaching.</p>
       </div>
 
       {/* rounded-full works as a single-line status pill on desktop, but at
