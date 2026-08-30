@@ -82,17 +82,18 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl bg-flat-bg font-modernist text-flat-text">
+    <main className="mx-auto max-w-6xl bg-flat-bg font-modernist text-flat-text">
       {/* Nav: mark + wordmark only -- no tagline (it's now the hero h1
-          itself) and no Ko-fi link (moved to the "signed in" bar below,
-          softened to "Say thanks!"). */}
-      <div className="flex items-center gap-3 px-6 py-6 sm:px-12 lg:px-16">
+          itself). Ko-fi link lives at the bottom-right of the hero box
+          below (Adam: remove the standalone "signed in / the dashboard"
+          bar, move Support SortEd up into the hero). */}
+      <div className="flex items-center gap-3 px-6 py-6 sm:px-12 lg:px-20 xl:px-24">
         <FlatMark />
         <span className="text-base font-bold uppercase tracking-wide">SortEd</span>
       </div>
 
       {/* Hero */}
-      <div className="border-b-2 border-flat-divider px-6 py-10 sm:px-12 sm:py-14 lg:px-16 lg:py-16">
+      <div className="border-b-2 border-flat-divider px-6 py-10 sm:px-12 sm:py-14 lg:px-20 lg:py-20 xl:px-24">
         <h1 className="font-modernist text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-[56px]">
           Teaching comes first.
         </h1>
@@ -143,19 +144,10 @@ export default function Home() {
             </>
           )}
         </div>
-      </div>
 
-      {/* Section label + de-emphasized Ko-fi link, replacing the old
-          rounded auth-status pill. Always shown (not gated on auth) --
-          it's introducing the dashboard section below, not restating the
-          hero's own sign-in state. Copy adapts slightly from the handoff's
-          static "Signed in — the dashboard" so it doesn't claim an
-          authenticated state that isn't true yet. */}
-      <div className="flex items-center justify-between border-b-2 border-flat-divider px-6 py-4 sm:px-12 lg:px-16">
-        <span className="text-[11px] uppercase tracking-[0.12em] opacity-50">
-          {status === "authenticated" ? "Signed in — the dashboard" : "The dashboard"}
-        </span>
-        <KofiButton />
+        <div className="mt-8 flex justify-end sm:mt-10">
+          <KofiButton />
+        </div>
       </div>
 
       {/* min-w-0 on every direct child of the grid cells below, same fix
@@ -164,18 +156,18 @@ export default function Home() {
           category pills) can still force a grid track wide if its
           wrapper isn't allowed to shrink. */}
       <div className="grid grid-cols-1 md:grid-cols-2 [&>*]:min-w-0">
-        <div className="border-b-2 border-flat-divider p-6 sm:p-8 lg:p-10 md:border-r-2">
+        <div className="border-b-2 border-flat-divider p-6 sm:p-8 lg:p-12 md:border-r-2">
           <TaskCapture onSorted={refresh} />
         </div>
-        <div className="border-b-2 border-flat-divider p-6 sm:p-8 lg:p-10">
+        <div className="border-b-2 border-flat-divider p-6 sm:p-8 lg:p-12">
           <TodaySchedule />
         </div>
-        <div className="p-6 sm:p-8 lg:p-10 md:col-span-2">
+        <div className="p-6 sm:p-8 lg:p-12 md:col-span-2">
           <AutoDetectPanel onSorted={refresh} />
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 px-6 py-8 sm:px-12 sm:py-10 lg:px-16">
+      <div className="flex flex-col gap-4 px-6 py-8 sm:px-12 sm:py-10 lg:px-20 lg:py-12 xl:px-24">
         <SortedList tasks={tasks} onChanged={refresh} />
         <p className="text-sm opacity-60">
           Saved right here on this device. Closing and reopening this tab keeps everything. A
@@ -183,7 +175,7 @@ export default function Home() {
         </p>
       </div>
 
-      <footer className="border-t-2 border-flat-divider px-6 py-5 text-xs opacity-60 sm:px-12 lg:px-16">
+      <footer className="border-t-2 border-flat-divider px-6 py-5 text-xs opacity-60 sm:px-12 lg:px-20 xl:px-24">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="max-w-md">
             Everything above stays private — nothing is stored on a server, ever.
