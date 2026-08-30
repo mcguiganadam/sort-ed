@@ -143,10 +143,9 @@ export default function Home() {
               </span>
             </>
           )}
-        </div>
-
-        <div className="mt-8 flex justify-end sm:mt-10">
-          <KofiButton />
+          <div className="ml-auto">
+            <KofiButton />
+          </div>
         </div>
       </div>
 
